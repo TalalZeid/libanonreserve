@@ -1,0 +1,12 @@
+{
+  "name": "Mawa3id",
+  "short_name": "Mawa3id",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f7f7f5",
+  "theme_color": "#1e7a5f",
+  "icons": [
+    { "src": "assets/icon.png", "sizes": "175x175", "type": "image/png" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
