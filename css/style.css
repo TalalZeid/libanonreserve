@@ -1068,6 +1068,12 @@ section {
   text-align: center;
 }
 
+@media (max-width: 420px) {
+  .cta-card {
+    padding: 60px 18px;
+  }
+}
+
 .cta-card h2 {
   font-size: clamp(2.2rem, 5.6vw, 4.4rem);
   text-transform: uppercase;
@@ -1103,6 +1109,32 @@ section {
   height: 38px;
   object-fit: contain;
   display: block;
+}
+
+@media (max-width: 640px) {
+  .cta-email {
+    font-size: 0.95rem;
+    padding: 0 18px;
+    gap: 8px;
+    max-width: 100%;
+  }
+
+  .cta-icon {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 420px) {
+  .cta-email {
+    font-size: 0.72rem;
+    padding: 0 14px;
+  }
+
+  .cta-icon {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 /* ===== Footer ===== */
