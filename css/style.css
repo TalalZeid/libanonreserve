@@ -282,6 +282,43 @@ button:focus-visible {
   transform: translateY(-2px);
 }
 
+@media (max-width: 640px) {
+  .topbar-inner {
+    height: 76px;
+    gap: 10px;
+  }
+
+  .brand-logo {
+    height: 44px;
+  }
+
+  .brand-name {
+    font-size: 1.15rem;
+  }
+
+  .nav-right {
+    gap: 8px;
+  }
+
+  .lang-toggle {
+    padding: 0 12px;
+    min-height: 38px;
+    font-size: 0.76rem;
+  }
+
+  .btn-cta {
+    padding: 0 14px;
+    min-height: 38px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .brand-name {
+    display: none;
+  }
+}
+
 /* ===== Hero ===== */
 
 .hero {
