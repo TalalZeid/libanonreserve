@@ -48,6 +48,13 @@ async function loadProvider() {
   }
 
   currentProvider = data;
+
+  if (isProviderLocked(data)) {
+    currentBookingCount = 0;
+    renderProviderInfo();
+    return;
+  }
+
   const { data: countResult } = await sb.rpc("get_booking_count", { p_provider_id: providerId });
   currentBookingCount = countResult || 0;
   renderProviderInfo();
@@ -78,24 +85,44 @@ const SHARE_ICON = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" str
   <path d="M8.6 10.5l6.8-3.9M8.6 13.5l6.8 3.9" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
+const CHECK_SHIELD_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+function floatCard(kind, icon, title, sub) {
+  return `<div class="float-card ${kind}">
+    <span class="float-icon">${icon}</span>
+    <span><b>${title}</b><small>${sub}</small></span>
+  </div>`;
+}
+
 function buildRecommendLink() {
   const url = `${window.location.origin}${window.location.pathname}?id=${providerId}`;
   const providerLabel = providerName(currentProvider);
   const message =
     getLang() === "ar"
       ? `شاهد ${providerLabel} على مواعيد، يمكنك حجز موعد مباشرة من هنا:\n${url}`
-      : `Check out ${providerLabel} on Mawa3id, you can book an appointment directly here:\n${url}`;
+      : `Check out ${providerLabel}, you can book an appointment directly here:\n${url}`;
   return `https://wa.me/?text=${encodeURIComponent(message)}`;
 }
 
 function renderProviderInfo() {
   const p = currentProvider;
-  const hasLocation = p.latitude != null && p.longitude != null;
-  const description = providerDescription(p);
+  const locked = isProviderLocked(p);
+  const hasLocation = !locked && p.latitude != null && p.longitude != null;
+  const description = !locked ? providerDescription(p) : "";
 
   document.getElementById("provider-info").innerHTML = `
     <div class="provider-header">
-      ${p.featured ? `<span class="featured-badge">${STAR_ICON} ${t("featured_badge")}</span>` : ""}
+      ${
+        !locked
+          ? `<div class="float-badges-row">
+              ${p.featured ? floatCard("featured", STAR_ICON, t("featured_badge"), t("featured_badge_sub")) : ""}
+              ${floatCard("verified", CHECK_SHIELD_ICON, t("verified_badge"), t("verified_badge_sub"))}
+            </div>`
+          : ""
+      }
       ${
         p.image_url
           ? `<img class="provider-avatar" src="${p.image_url}" alt="" />`
@@ -103,27 +130,33 @@ function renderProviderInfo() {
       }
       <span class="provider-category">${categoryLabel(p.category)}</span>
       <h1 class="provider-name">${providerName(p)}</h1>
-      ${currentBookingCount >= MIN_BOOKINGS_TO_SHOW ? `<p class="booking-count">${t("booking_count_label").replace("{count}", formatTime(String(currentBookingCount)))}</p>` : ""}
+      ${!locked && currentBookingCount >= MIN_BOOKINGS_TO_SHOW ? `<p class="booking-count">${PEOPLE_ICON} ${t("booking_count_label").replace("{count}", formatTime(String(currentBookingCount)))}</p>` : ""}
     </div>
-    <div class="provider-info-body">
-      ${description ? `<p class="provider-description">${description}</p>` : ""}
-      ${p.address ? `<p class="provider-address">${PIN_ICON} ${p.address}</p>` : ""}
-      ${
-        hasLocation
-          ? `<div id="provider-map" class="provider-map"></div>
-             <div class="directions-links">
-               <a class="directions-btn" target="_blank" rel="noopener"
-                  href="https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}">${ROUTE_ICON} Google Maps</a>
-               <a class="directions-btn waze" target="_blank" rel="noopener"
-                  href="https://waze.com/ul?ll=${p.latitude},${p.longitude}&navigate=yes">${ROUTE_ICON} Waze</a>
-             </div>`
-          : ""
-      }
-      <a class="recommend-btn" target="_blank" rel="noopener" href="${buildRecommendLink()}">
-        ${SHARE_ICON} ${t("recommend_button")}
-      </a>
-    </div>
+    ${
+      locked
+        ? `<div class="provider-info-body">
+            <p class="provider-locked-notice">${t("provider_unavailable_notice")}</p>
+          </div>`
+        : `<div class="provider-info-body">
+            ${description ? `<p class="provider-description">${description}</p>` : ""}
+            ${p.address ? `<p class="provider-address">${PIN_ICON} ${p.address}</p>` : ""}
+            ${
+              hasLocation
+                ? `<div id="provider-map" class="provider-map"></div>
+                   <div class="directions-links">
+                     <a class="directions-btn" target="_blank" rel="noopener"
+                        href="https://www.google.com/maps/dir/?api=1&destination=${p.latitude},${p.longitude}">${ROUTE_ICON} Google Maps</a>
+                   </div>`
+                : ""
+            }
+            <a class="recommend-btn" target="_blank" rel="noopener" href="${buildRecommendLink()}">
+              ${SHARE_ICON} ${t("recommend_button")}
+            </a>
+          </div>`
+    }
   `;
+
+  if (locked) return;
 
   if (hasLocation) {
     const map = L.map("provider-map", { zoomControl: false, attributionControl: false }).setView(
@@ -132,6 +165,16 @@ function renderProviderInfo() {
     );
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
     L.marker([p.latitude, p.longitude]).addTo(map);
+  }
+
+  const waFab = document.getElementById("whatsapp-fab");
+  if (waFab) {
+    const inquiryText =
+      getLang() === "ar"
+        ? `مرحبا، عندي سؤال بخصوص ${providerName(p)}`
+        : `Hi, I have a question about ${providerName(p)}`;
+    waFab.href = buildWhatsappContactLink(p.phone_whatsapp, inquiryText);
+    waFab.hidden = false;
   }
 }
 

@@ -121,9 +121,10 @@ function renderProviders() {
   listEl.innerHTML = visible
     .map((p) => {
       const count = bookingCounts[p.id] || 0;
+      const locked = isProviderLocked(p);
       return `
-      <a class="provider-card" href="provider.html?id=${p.id}">
-        ${p.featured ? `<span class="featured-badge">${STAR_ICON} ${t("featured_badge")}</span>` : ""}
+      <a class="provider-card ${locked ? "provider-card-locked" : ""}" href="provider.html?id=${p.id}">
+        ${!locked && p.featured ? `<span class="featured-badge">${STAR_ICON} ${t("featured_badge")}</span>` : ""}
         <div class="provider-card-header">
           ${
             p.image_url
@@ -135,9 +136,15 @@ function renderProviders() {
             <h3>${providerName(p)}</h3>
           </div>
         </div>
-        <p class="provider-address">${p.address || ""}</p>
-        ${count >= MIN_BOOKINGS_TO_SHOW ? `<p class="booking-count">${t("booking_count_label").replace("{count}", formatTime(String(count)))}</p>` : ""}
-        <span class="book-btn">${t("provider_book_button")}</span>
+        ${
+          locked
+            ? `<span class="provider-locked-badge">${t("provider_unavailable")}</span>`
+            : `
+              <p class="provider-address">${p.address || ""}</p>
+              ${count >= MIN_BOOKINGS_TO_SHOW ? `<p class="booking-count">${PEOPLE_ICON} ${t("booking_count_label").replace("{count}", formatTime(String(count)))}</p>` : ""}
+              <span class="book-btn">${t("provider_book_button")}</span>
+            `
+        }
       </a>`;
     })
     .join("");

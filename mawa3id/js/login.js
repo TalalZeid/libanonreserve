@@ -3,6 +3,11 @@
 // bestimmten Firma (provider_owners-Tabelle), und die passende Ansicht
 // gezeigt.
 
+document.getElementById("toggle-login-password").addEventListener("click", () => {
+  const input = document.getElementById("login-password");
+  input.type = input.type === "password" ? "text" : "password";
+});
+
 async function checkSession() {
   const { data } = await sb.auth.getSession();
   const loggedIn = !!data.session;
@@ -12,6 +17,7 @@ async function checkSession() {
   document.getElementById("admin-panel").hidden = true;
   document.getElementById("owner-panel").hidden = true;
   document.getElementById("no-account-message").hidden = true;
+  document.getElementById("enable-push-btn").hidden = true;
 
   if (!loggedIn) return;
 

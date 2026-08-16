@@ -2,6 +2,9 @@ let ownerProviderId = null;
 let ownerProvider = null;
 let ownerSelectedDate = null;
 
+// TODO: Whish-Zahlungslink hier eintragen, sobald erstellt (Whish-App -> Zahlungslink erstellen).
+const WHISH_PAYMENT_LINK = "";
+
 const CALENDAR_ICON = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
   <rect x="3" y="5" width="18" height="16" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
   <path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -74,6 +77,7 @@ async function loadOwnerProvider() {
     .single();
   ownerProvider = provider;
   renderOwnerHeader();
+  renderSubscriptionBanner();
 
   const dateInput = document.getElementById("owner-date-input");
   const today = new Date().toISOString().split("T")[0];
@@ -86,7 +90,7 @@ async function loadOwnerProvider() {
 }
 
 function renderOwnerHeader() {
-  document.getElementById("owner-provider-header").innerHTML = `
+  document.getElementById("owner-identity-content").innerHTML = `
     ${
       ownerProvider.image_url
         ? `<img class="provider-avatar-sm" src="${ownerProvider.image_url}" alt="" />`
@@ -97,6 +101,41 @@ function renderOwnerHeader() {
       <span class="provider-category">${categoryLabel(ownerProvider.category)}</span>
     </div>
   `;
+}
+
+// Zeigt den Abo-Status-Banner: nichts wenn weit im Voraus bezahlt, gelbe
+// Warnung mit Tage-Countdown ab 7 Tagen vorher, rote Sperre nach Ablauf.
+function renderSubscriptionBanner() {
+  const banner = document.getElementById("subscription-banner");
+  const until = ownerProvider.subscription_active_until;
+  const today = new Date().toISOString().split("T")[0];
+  const daysLeft = until ? Math.round((new Date(until + "T00:00:00") - new Date(today + "T00:00:00")) / 86400000) : null;
+
+  const payLink = document.getElementById("subscription-pay-link");
+  payLink.href = WHISH_PAYMENT_LINK || "#";
+  payLink.hidden = !WHISH_PAYMENT_LINK;
+
+  if (daysLeft !== null && daysLeft > 7) {
+    banner.hidden = true;
+    return;
+  }
+
+  banner.hidden = false;
+  banner.className = "subscription-banner";
+  const countdownEl = document.getElementById("subscription-countdown");
+
+  if (daysLeft === null || daysLeft < 0) {
+    banner.classList.add("expired");
+    document.getElementById("subscription-banner-title").textContent = t("subscription_expired_title");
+    document.getElementById("subscription-banner-desc").textContent = t("subscription_expired_desc");
+    countdownEl.hidden = true;
+  } else {
+    banner.classList.add("expiring");
+    document.getElementById("subscription-banner-title").textContent = t("subscription_expiring_title");
+    document.getElementById("subscription-banner-desc").textContent = t("subscription_expiring_desc");
+    document.getElementById("subscription-countdown-days").textContent = formatTime(String(daysLeft));
+    countdownEl.hidden = false;
+  }
 }
 
 document.querySelectorAll(".owner-nav-btn").forEach((btn) => {
@@ -219,7 +258,6 @@ function showOwnerSlotDetail(slot, appt) {
       <p>${appt.customer_name} — ${appt.customer_phone}</p>
       <a class="whatsapp-btn" target="_blank" rel="noopener" href="${contactCustomerLink(appt)}">${WHATSAPP_ICON} ${t("contact_customer")}</a>
       <button type="button" id="add-to-calendar-detail-btn">${CALENDAR_ICON} ${t("add_to_calendar")}</button>
-      <button type="button" id="cancel-booking-btn" class="danger-btn">${t("owner_cancel_booking_button")}</button>
     </div>`;
   document.getElementById("add-to-calendar-detail-btn").addEventListener("click", () => {
     downloadICS({
@@ -229,14 +267,6 @@ function showOwnerSlotDetail(slot, appt) {
       timeStr: slot,
       durationMinutes: ownerProvider.slot_minutes
     });
-  });
-  document.getElementById("cancel-booking-btn").addEventListener("click", async () => {
-    if (!confirm(t("owner_cancel_booking_confirm"))) return;
-    const { error } = await sb.from("appointments").delete().eq("id", appt.id);
-    if (!error) {
-      loadOwnerDay();
-      loadAllAppointments();
-    }
   });
 }
 
@@ -292,47 +322,107 @@ function formatShortDate(dateStr) {
   return { day, month };
 }
 
+// Gibt die Gruppen-Ueberschrift fuer ein Datum zurueck (Heute/Morgen/Uebermorgen/
+// Wochentag/Naechste Woche + Wochentag/reines Datum bei weiter entfernten Tagen).
+function groupDateLabel(dateStr) {
+  const target = new Date(dateStr + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const diffDays = Math.round((target - today) / 86400000);
+  const weekday = target.toLocaleDateString(getLang() === "ar" ? "ar" : "en", { weekday: "long" });
+
+  if (diffDays === 0) return t("date_today");
+  if (diffDays === 1) return t("date_tomorrow");
+  if (diffDays === 2) return t("date_day_after_tomorrow");
+  if (diffDays === -1) return t("date_yesterday");
+  if (diffDays > 2 && diffDays < 7) return weekday;
+  if (diffDays >= 7 && diffDays < 14) return `${t("date_next_week")} · ${weekday}`;
+
+  const { day, month } = formatShortDate(dateStr);
+  return `${day} ${month}`;
+}
+
+function appointmentRowHTML(a) {
+  const label = a.blocked ? t("owner_slot_blocked_by_you") : a.customer_name;
+  return `
+    <div class="appt-row ${a.blocked ? "blocked" : ""}">
+      <span class="appt-row-time">${formatTime(a.appointment_time.slice(0, 5))}</span>
+      <span class="appt-row-customer">${label}</span>
+      <div class="appt-row-actions">
+        ${
+          a.blocked
+            ? ""
+            : `<a class="icon-btn" target="_blank" rel="noopener" href="${contactCustomerLink(a)}" title="${t("contact_customer")}">${WHATSAPP_ICON}</a>`
+        }
+        <button type="button" class="icon-btn" data-calendar="${a.id}" title="${t("add_to_calendar")}">${CALENDAR_ICON}</button>
+      </div>
+    </div>`;
+}
+
 async function loadAllAppointments() {
+  const listEl = document.getElementById("all-appointments-list");
+
+  // Nach mehr als 3 Tagen ohne aktives Abo verliert der Anbieter auch den
+  // Zugriff auf seine eigene Terminhistorie (nicht geloescht, nur ausgeblendet).
+  const until = ownerProvider.subscription_active_until;
+  const today = new Date().toISOString().split("T")[0];
+  const daysSinceExpiry = until
+    ? Math.round((new Date(today + "T00:00:00") - new Date(until + "T00:00:00")) / 86400000)
+    : Infinity;
+
+  if (daysSinceExpiry > 3) {
+    renderOwnerStats([]);
+    listEl.className = "";
+    listEl.innerHTML = `<p>${t("owner_data_locked")}</p>`;
+    return;
+  }
+
   const { data, error } = await sb
     .from("appointments")
     .select("*")
     .eq("provider_id", ownerProviderId)
-    .order("appointment_date", { ascending: false })
-    .order("appointment_time", { ascending: false });
+    .order("appointment_date", { ascending: true })
+    .order("appointment_time", { ascending: true });
 
   renderOwnerStats(data || []);
 
-  const listEl = document.getElementById("all-appointments-list");
   if (error || !data || data.length === 0) {
     listEl.className = "";
     listEl.innerHTML = `<p>${t("owner_no_appointments")}</p>`;
     return;
   }
 
-  listEl.className = "appointments-grid";
-  listEl.innerHTML = data
-    .map((a) => {
-      const { day, month } = formatShortDate(a.appointment_date);
-      const label = a.blocked ? t("owner_slot_blocked_by_you") : a.customer_name;
-      return `
-        <div class="appointment-card ${a.blocked ? "blocked" : ""}">
-          <div class="appointment-card-date">
-            <span class="appointment-day">${day}</span>
-            <span class="appointment-month">${month}</span>
+  // Anstehende Termine (heute + Zukunft) zuerst, naechster zuerst -- danach
+  // vergangene Termine, juengste Vergangenheit zuerst. Reine chronologische
+  // Sortierung wuerde alte Termine ganz oben zeigen, was fuer den Anbieter
+  // nicht hilfreich ist.
+  const upcoming = data.filter((a) => a.appointment_date >= today);
+  const past = data
+    .filter((a) => a.appointment_date < today)
+    .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date) || a.appointment_time.localeCompare(b.appointment_time));
+  const ordered = [...upcoming, ...past];
+
+  const groups = [];
+  ordered.forEach((a) => {
+    const last = groups[groups.length - 1];
+    if (last && last.date === a.appointment_date) {
+      last.items.push(a);
+    } else {
+      groups.push({ date: a.appointment_date, items: [a] });
+    }
+  });
+
+  listEl.className = "appt-groups";
+  listEl.innerHTML = groups
+    .map(
+      (group) => `
+        <div class="appt-group">
+          <h3 class="appt-group-title">${groupDateLabel(group.date)}</h3>
+          <div class="appt-list">
+            ${group.items.map((a) => appointmentRowHTML(a)).join("")}
           </div>
-          <strong class="appointment-time">${formatTime(a.appointment_time.slice(0, 5))}</strong>
-          <span class="appointment-customer">${label}</span>
-          <div class="appointment-card-actions">
-            ${
-              a.blocked
-                ? ""
-                : `<a class="icon-btn" target="_blank" rel="noopener" href="${contactCustomerLink(a)}" title="${t("contact_customer")}">${WHATSAPP_ICON}</a>`
-            }
-            <button type="button" class="icon-btn" data-calendar="${a.id}" title="${t("add_to_calendar")}">${CALENDAR_ICON}</button>
-            <button type="button" class="icon-btn danger" data-cancel="${a.id}" title="${t("admin_delete")}">${TRASH_ICON}</button>
-          </div>
-        </div>`;
-    })
+        </div>`
+    )
     .join("");
 
   listEl.querySelectorAll("[data-calendar]").forEach((btn) => {
@@ -351,29 +441,33 @@ async function loadAllAppointments() {
     });
   });
 
-  listEl.querySelectorAll("[data-cancel]").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (!confirm(t("owner_cancel_booking_confirm"))) return;
-      await sb.from("appointments").delete().eq("id", btn.getAttribute("data-cancel"));
-      loadAllAppointments();
-      loadOwnerDay();
-      loadClosedDays();
-    });
-  });
 }
 
 function updatePushButtonLabel(enabled) {
-  const label = document.getElementById("enable-push-label");
   const btn = document.getElementById("enable-push-btn");
-  if (!label || !btn) return;
-  label.textContent = enabled ? t("owner_push_enabled") : t("owner_enable_push");
+  if (!btn) return;
+  btn.hidden = false;
+  btn.title = enabled ? t("owner_push_enabled") : t("owner_enable_push");
   btn.classList.toggle("enabled", enabled);
 }
 
-document.getElementById("enable-push-btn").addEventListener("click", async () => {
+document.getElementById("enable-push-btn").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
+
+  if (btn.classList.contains("enabled")) {
+    await sb.from("provider_owners").update({ push_token: null }).eq("provider_id", ownerProviderId);
+    updatePushButtonLabel(false);
+    return;
+  }
+
+  if (isPushBlocked()) {
+    showInfoModal(t("owner_enable_push"), t("owner_push_blocked"));
+    return;
+  }
+
   const token = await requestPushToken();
   if (!token) {
-    alert(t("owner_push_denied"));
+    showInfoModal(t("owner_enable_push"), t("owner_push_denied"));
     return;
   }
   await sb.from("provider_owners").update({ push_token: token }).eq("provider_id", ownerProviderId);

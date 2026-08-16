@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title data-i18n="site_title">مواعيد</title>
   <link rel="icon" type="image/png" href="assets/icon.png?v=2" />
-  <link rel="stylesheet" href="css/style.css?v=19" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Amiri:wght@400;700&family=Nunito:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=36" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="admin-body">
@@ -23,7 +26,7 @@
     </div>
   </header>
 
-  <form id="login-form" class="auth-card">
+  <form id="login-form" class="auth-card reveal">
     <div class="auth-card-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="4" y="10" width="16" height="10" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -34,7 +37,15 @@
     <label for="login-email" data-i18n="admin_email">البريد الإلكتروني</label>
     <input type="email" id="login-email" required />
     <label for="login-password" data-i18n="admin_password">كلمة المرور</label>
-    <input type="password" id="login-password" required />
+    <div class="password-field">
+      <input type="password" id="login-password" required />
+      <button type="button" id="toggle-login-password" class="password-toggle-btn" aria-label="Show password">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
     <button type="submit" data-i18n="admin_login_button">دخول</button>
     <p id="login-error" class="error-text"></p>
   </form>
@@ -52,7 +63,7 @@
   </div>
 
   <div id="admin-panel" class="dashboard" hidden>
-    <aside class="dashboard-sidebar">
+    <aside class="dashboard-sidebar reveal">
       <div class="dashboard-sidebar-header">
         <div>
           <h1 class="dashboard-title" data-i18n="admin_providers_list_title">مقدمو الخدمة المسجلون</h1>
@@ -200,6 +211,17 @@
           </div>
         </div>
 
+        <div class="form-section">
+          <h3 class="form-section-title" data-i18n="admin_subscription">الاشتراك</h3>
+          <label for="subscription-until" data-i18n="admin_subscription_until">نشط حتى تاريخ</label>
+          <input type="date" id="subscription-until" />
+          <div class="inline-field-row">
+            <button type="button" id="extend-30-btn" class="chip-btn" data-i18n="admin_extend_30">+30 يوم</button>
+            <button type="button" id="extend-90-btn" class="chip-btn" data-i18n="admin_extend_90">+90 يوم</button>
+          </div>
+          <p class="hint" id="subscription-status-hint"></p>
+        </div>
+
         <div class="dashboard-form-footer">
           <p id="provider-form-result"></p>
           <button type="submit" id="provider-form-submit" data-i18n="admin_save_button">حفظ</button>
@@ -209,8 +231,16 @@
   </div>
 
   <div id="owner-panel" class="dashboard" hidden>
-    <aside class="dashboard-sidebar">
-      <div id="owner-provider-header" class="owner-sidebar-identity"></div>
+    <aside class="dashboard-sidebar reveal">
+      <div id="owner-provider-header" class="owner-sidebar-identity">
+        <div id="owner-identity-content" class="owner-identity-content"></div>
+        <button type="button" id="enable-push-btn" class="nav-push-btn" hidden data-i18n-title="owner_enable_push" title="تفعيل إشعارات التطبيق">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 19a2 2 0 0 0 4 0" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
 
       <nav class="owner-nav">
         <button type="button" class="owner-nav-btn active" data-view="appointments">
@@ -236,17 +266,31 @@
         </button>
       </nav>
 
-      <button type="button" id="enable-push-btn" class="owner-push-btn">
+      <button type="button" class="install-nav-btn install-btn owner-install-btn" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M10 19a2 2 0 0 0 4 0" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="6" y="2" width="12" height="20" rx="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M10 18h4M12 7v6m0 0-2.5-2.5M12 13l2.5-2.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <span id="enable-push-label" data-i18n="owner_enable_push">تفعيل إشعارات التطبيق</span>
+        <span data-i18n="owner_download_app">تنزيل التطبيق</span>
       </button>
     </aside>
 
     <section class="dashboard-main">
-      <div id="owner-stats" class="stats-row"></div>
+      <div id="subscription-banner" class="subscription-banner" hidden>
+        <div class="subscription-banner-text">
+          <strong id="subscription-banner-title"></strong>
+          <p id="subscription-banner-desc"></p>
+        </div>
+        <div class="subscription-countdown" id="subscription-countdown" hidden>
+          <div class="subscription-countdown-unit">
+            <span id="subscription-countdown-days">0</span>
+            <small data-i18n="subscription_days_unit">يوم</small>
+          </div>
+        </div>
+        <a id="subscription-pay-link" class="subscription-pay-btn" target="_blank" rel="noopener" data-i18n="subscription_pay_now">ادفع الآن</a>
+      </div>
+
+      <div id="owner-stats" class="stats-row reveal"></div>
 
       <div id="owner-view-appointments" class="owner-view">
         <h2 class="owner-view-title" data-i18n="owner_all_appointments_title">جميع المواعيد</h2>

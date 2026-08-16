@@ -7,6 +7,14 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Prueft, ob Benachrichtigungen fuer diese Seite bereits vorher im Browser
+// abgelehnt wurden. In dem Fall zeigt requestPermission() gar keinen Dialog
+// mehr, sondern gibt sofort und stumm "denied" zurueck -- das koennen wir
+// vorher erkennen, um direkt die Anleitung statt eines nutzlosen Versuchs zu zeigen.
+function isPushBlocked() {
+  return "Notification" in window && Notification.permission === "denied";
+}
+
 // Push-Benachrichtigungen (Firebase Cloud Messaging).
 // Fragt Erlaubnis an und gibt bei Zustimmung den Geraete-Token zurueck,
 // sonst null (z.B. abgelehnt, nicht unterstuetzt, iOS ohne Installation).
@@ -22,7 +30,8 @@ async function requestPushToken() {
     const messaging = firebase.messaging();
     const registration = await navigator.serviceWorker.ready;
     return await messaging.getToken({ vapidKey: FIREBASE_VAPID_KEY, serviceWorkerRegistration: registration });
-  } catch {
+  } catch (err) {
+    console.error("requestPushToken failed:", err);
     return null;
   }
 }
@@ -73,6 +82,37 @@ window.addEventListener("appinstalled", () => {
   hideInstallUI();
 });
 
+// Generisches Hinweis-Popup (ersetzt haessliche Browser-alert()-Dialoge).
+function showInfoModal(title, text) {
+  let modal = document.getElementById("info-modal");
+  if (!modal) {
+    modal = document.createElement("div");
+    modal.id = "info-modal";
+    modal.className = "modal-overlay";
+    modal.innerHTML = `
+      <div class="modal-card surface-card">
+        <button type="button" class="modal-close" aria-label="Close">&times;</button>
+        <h3 id="info-modal-title"></h3>
+        <p id="info-modal-text" class="hint"></p>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.hidden = true;
+    });
+    modal.querySelector(".modal-close").addEventListener("click", () => {
+      modal.hidden = true;
+    });
+  }
+  modal.querySelector("#info-modal-title").textContent = title;
+  modal.querySelector("#info-modal-text").textContent = text;
+  modal.hidden = false;
+}
+
+function showInstallHintModal() {
+  showInfoModal(t("install_banner_title"), t("install_fallback_hint"));
+}
+
 async function triggerInstall() {
   if (deferredInstallPrompt) {
     deferredInstallPrompt.prompt();
@@ -81,9 +121,10 @@ async function triggerInstall() {
     hideInstallUI();
     return;
   }
-  if (isIOS()) {
-    document.getElementById("ios-install-hint").hidden = false;
-  }
+  // Der Browser hat "beforeinstallprompt" auf dieser Seite (noch) nicht
+  // ausgeloest -- kommt vor, z.B. nach einem Seitenwechsel. Statt dass der
+  // Klick wirkungslos bleibt, zeigen wir eine allgemeine Anleitung als Popup.
+  showInstallHintModal();
 }
 
 function dismissInstallBanner() {
@@ -105,8 +146,46 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isIOS() && !isStandalone()) showInstallUI();
 });
 
+// Kopfzeile bekommt beim Scrollen einen sichtbaren Schatten (statt flach zu wirken).
+const topbarEl = document.querySelector(".topbar");
+if (topbarEl) {
+  const onTopbarScroll = () => topbarEl.classList.toggle("scrolled", window.scrollY > 8);
+  window.addEventListener("scroll", onTopbarScroll, { passive: true });
+  onTopbarScroll();
+}
+
+// Sanftes Einblenden von Blöcken, sobald sie beim Scrollen ins Bild kommen.
+// Funktioniert auch fuer Blöcke, die erst spaeter (z.B. nach Login) eingeblendet
+// werden, da IntersectionObserver durchgehend beobachtet, nicht nur einmalig.
+if ("IntersectionObserver" in window) {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12 }
+  );
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".reveal").forEach((el) => revealObserver.observe(el));
+  });
+} else {
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".reveal").forEach((el) => el.classList.add("in"));
+  });
+}
+
 const STAR_ICON = `<svg class="icon-inline" viewBox="0 0 24 24" fill="currentColor">
   <path d="M12 2.5l2.9 6.4 7 .7-5.3 4.7 1.6 6.9L12 17.6l-6.2 3.6 1.6-6.9L2.1 9.6l7-.7L12 2.5Z"/>
+</svg>`;
+
+const PEOPLE_ICON = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="10" cy="7" r="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
 let allCategories = [];
@@ -122,6 +201,14 @@ function categoryLabel(category) {
   return getLang() === "ar" ? category.name_ar : category.name_en;
 }
 
+// Anbieter ohne aktives (nicht abgelaufenes) Abo gelten als gesperrt --
+// bleiben in der Liste sichtbar, aber ohne Details/Buchungsmoeglichkeit.
+function isProviderLocked(provider) {
+  if (!provider.subscription_active_until) return true;
+  const today = new Date().toISOString().split("T")[0];
+  return provider.subscription_active_until < today;
+}
+
 function providerName(provider) {
   return getLang() === "ar" ? provider.name_ar : provider.name_en;
 }
@@ -135,14 +222,13 @@ function providerInitial(provider) {
   return name ? name[0].toUpperCase() : "?";
 }
 
-// Bringt eine vom Kunden eingegebene Telefonnummer in ein wa.me-taugliches
-// Format (nur Ziffern, mit libanesischer Landesvorwahl 961).
+// Bringt eine Telefonnummer in ein wa.me-taugliches Format (nur Ziffern).
+// Erwartet, dass die Nummer bereits die vollstaendige Landesvorwahl enthaelt
+// (z.B. +961 71 234567 oder +49 151 23456789) -- keine automatische Annahme
+// mehr, dass es sich um eine libanesische Nummer handelt.
 function formatWhatsappNumber(phone) {
   let digits = (phone || "").replace(/\D/g, "");
-  if (digits.startsWith("00961")) digits = digits.slice(2);
-  else if (!digits.startsWith("961")) {
-    digits = digits.startsWith("0") ? "961" + digits.slice(1) : "961" + digits;
-  }
+  if (digits.startsWith("00")) digits = digits.slice(2);
   return digits;
 }
 

@@ -233,6 +233,8 @@ function startEdit(id) {
   document.getElementById("slot-minutes").value = p.slot_minutes;
   document.getElementById("owner-email").value = adminProviderOwners[p.id] || "";
   document.getElementById("featured-toggle").checked = !!p.featured;
+  document.getElementById("subscription-until").value = p.subscription_active_until || "";
+  updateSubscriptionHint();
   renderWorkingDaysCheckboxes(p.working_days);
 
   setImagePreview(p.image_url);
@@ -271,6 +273,7 @@ function resetForm() {
   setImagePreview(null);
   renderWorkingDaysCheckboxes();
   clearLocation();
+  updateSubscriptionHint();
   document.getElementById("provider-form-title").textContent = t("admin_add_provider_title");
   document.getElementById("provider-form-submit").textContent = t("admin_save_button");
   document.getElementById("cancel-edit-btn").hidden = true;
@@ -281,6 +284,33 @@ function resetForm() {
 
 document.getElementById("cancel-edit-btn").addEventListener("click", resetForm);
 document.getElementById("new-provider-btn").addEventListener("click", resetForm);
+
+// Zeigt an, ob das Abo aktiv/bald ablaufend/abgelaufen ist, direkt unter dem Datumsfeld.
+function updateSubscriptionHint() {
+  const hintEl = document.getElementById("subscription-status-hint");
+  const value = document.getElementById("subscription-until").value;
+  if (!value) {
+    hintEl.textContent = t("admin_subscription_none");
+    return;
+  }
+  const daysLeft = Math.ceil((new Date(value + "T00:00:00") - new Date().setHours(0, 0, 0, 0)) / 86400000);
+  if (daysLeft < 0) hintEl.textContent = t("admin_subscription_expired");
+  else if (daysLeft <= 7) hintEl.textContent = t("admin_subscription_expiring").replace("{days}", formatTime(String(daysLeft)));
+  else hintEl.textContent = t("admin_subscription_active").replace("{days}", formatTime(String(daysLeft)));
+}
+
+document.getElementById("subscription-until").addEventListener("change", updateSubscriptionHint);
+
+function extendSubscription(days) {
+  const input = document.getElementById("subscription-until");
+  const base = input.value && new Date(input.value + "T00:00:00") > new Date() ? new Date(input.value + "T00:00:00") : new Date();
+  base.setDate(base.getDate() + days);
+  input.value = base.toISOString().split("T")[0];
+  updateSubscriptionHint();
+}
+
+document.getElementById("extend-30-btn").addEventListener("click", () => extendSubscription(30));
+document.getElementById("extend-90-btn").addEventListener("click", () => extendSubscription(90));
 
 document.getElementById("image").addEventListener("change", (e) => {
   const file = e.target.files[0];
@@ -361,6 +391,7 @@ document.getElementById("provider-form").addEventListener("submit", async (e) =>
   let imageUrl = editingProviderId
     ? (adminProviders.find((p) => p.id === editingProviderId) || {}).image_url || null
     : null;
+  const oldImageUrl = imageUrl;
 
   const file = document.getElementById("image").files[0];
   if (file) {
@@ -374,6 +405,12 @@ document.getElementById("provider-form").addEventListener("submit", async (e) =>
       return;
     }
     imageUrl = sb.storage.from("provider-images").getPublicUrl(path).data.publicUrl;
+
+    // Altes Bild loeschen, damit im Storage-Bucket keine verwaisten Dateien liegen bleiben.
+    if (oldImageUrl) {
+      const oldPath = oldImageUrl.split("/provider-images/")[1];
+      if (oldPath) await sb.storage.from("provider-images").remove([oldPath]);
+    }
   }
 
   const payload = {
@@ -391,7 +428,8 @@ document.getElementById("provider-form").addEventListener("submit", async (e) =>
     start_time: document.getElementById("start-time").value,
     end_time: document.getElementById("end-time").value,
     slot_minutes: Number(document.getElementById("slot-minutes").value),
-    featured: document.getElementById("featured-toggle").checked
+    featured: document.getElementById("featured-toggle").checked,
+    subscription_active_until: document.getElementById("subscription-until").value || null
   };
 
   const { data: savedProvider, error } = editingProviderId

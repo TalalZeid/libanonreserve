@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WinGen — Software, Web & Automation Studio</title>
+  <link rel="icon" type="image/png" href="assets/icon.png" />
+  <meta name="theme-color" content="#0f1b3d" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Cairo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css?v=23" />
+</head>
+<body>
+  <header class="topbar" id="head">
+    <div class="wrap topbar-inner">
+      <a href="index.html" class="brand-link">
+        <img src="assets/logo-icon.png" alt="" class="brand-logo" />
+        <span class="brand-name">WinGen</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#services" data-i18n="nav_services">Services</a>
+        <a href="#work" data-i18n="nav_work">Work</a>
+        <a href="#process" data-i18n="nav_process">Process</a>
+        <a href="#contact" data-i18n="nav_about">About</a>
+      </nav>
+      <div class="nav-right">
+        <button type="button" id="lang-toggle" class="lang-toggle">العربية</button>
+        <a href="#contact" class="btn-cta" data-i18n="nav_cta">Start a project</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero floor-bg">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <span class="kicker"><span class="kicker-line"></span> <span data-i18n="hero_kicker">SOFTWARE · WEB · AUTOMATION</span></span>
+          <h1><span data-i18n="hero_h1_line1">WE BUILD</span><br /><em data-i18n="hero_h1_line2">SOFTWARE THAT SHIPS.</em></h1>
+          <p class="hero-desc" data-i18n="hero_desc">WinGen designs, builds and ships digital products end to end — web apps, automation systems and the infrastructure behind them.</p>
+          <a href="#work" class="btn-cta" data-i18n="hero_work_btn">See our work ↓</a>
+        </div>
+
+        <div class="hero-stage">
+          <img src="assets/decor-cubes.png" alt="" class="decor decor-hero-1" aria-hidden="true" />
+          <img src="assets/decor-ribbon2.png" alt="" class="decor decor-hero-2" aria-hidden="true" />
+
+          <div class="float-chip glass chip-top reveal">
+            <img src="assets/icons/icon-globe.png" alt="" class="chip-icon" />
+            <div><b data-i18n="chip_lang_title">Any language</b><small data-i18n="chip_lang_sub">Multi-language ready</small></div>
+          </div>
+
+          <img src="assets/hero-mockup.png" alt="Automation workflow dashboard" class="hero-mockup reveal" />
+
+          <div class="float-chip glass chip-bottom reveal">
+            <img src="assets/icons/icon-phone.png" alt="" class="chip-icon" />
+            <div><b data-i18n="chip_pwa_title">Installable PWA</b><small data-i18n="chip_pwa_sub">Works offline</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="work" class="projects-section">
+      <img src="assets/decor-crystal.png" alt="" class="decor decor-projects" aria-hidden="true" />
+      <img src="assets/decor-cubes.png" alt="" class="decor decor-projects-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="sec-head-left reveal">
+          <span class="eye" data-i18n="projects_eye">OUR WORK</span>
+          <h2><span data-i18n="projects_h2_line1">PRODUCTS WE'VE</span><br /><em data-i18n="projects_h2_line2">ACTUALLY SHIPPED.</em></h2>
+          <p data-i18n="projects_desc">A growing collection of real products, built end to end and running in production today.</p>
+        </div>
+
+        <div class="project-grid">
+          <a href="mawa3id/" class="project-card glass reveal">
+            <img src="assets/mawa3id-icon.png" alt="Booking platform logo" class="project-icon" />
+            <div class="project-info">
+              <span class="project-tag" data-i18n="project1_tag">Village Service Booking · Lebanon</span>
+              <h3 data-i18n="project1_title">Booking Platform</h3>
+              <p data-i18n="project1_desc">Helps local businesses and service providers in a Lebanese village get discovered and booked — customers browse, book and get confirmed by WhatsApp, all in one bilingual (Arabic/English) app.</p>
+              <div class="project-pills">
+                <span data-i18n="project1_pill1">Bilingual AR / EN</span>
+                <span data-i18n="project1_pill2">WhatsApp confirmations</span>
+                <span data-i18n="project1_pill3">Installable app</span>
+              </div>
+              <span class="link-arrow" data-i18n="project1_link">Visit the platform ↗</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="process" class="floor-bg">
+      <img src="assets/decor-crystal.png" alt="" class="decor decor-process" aria-hidden="true" />
+      <img src="assets/decor-cubes.png" alt="" class="decor decor-process-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eye" data-i18n="process_eye">OUR PROCESS</span>
+          <h2><span data-i18n="process_h2_line1">FROM FIRST IDEA</span><br /><em data-i18n="process_h2_line2">TO LAST DETAIL.</em></h2>
+          <p data-i18n="process_desc">A hands-on studio process that blends product thinking, design and engineering to build software that performs beautifully — and scales with you.</p>
+        </div>
+
+        <div class="steps">
+          <div class="step glass reveal">
+            <div class="step-top"><span class="step-badge"><img src="assets/icons/icon-compass.png" alt="" /></span><span class="step-n">01</span></div>
+            <img src="assets/icons/icon-compass.png" alt="" class="step-illustration" />
+            <h4 data-i18n="step1_title">Discover</h4><p data-i18n="step1_desc">We start by understanding your business, your users and your goals to uncover real opportunities.</p>
+          </div>
+          <div class="step glass reveal">
+            <div class="step-top"><span class="step-badge"><img src="assets/icons/icon-target.png" alt="" /></span><span class="step-n">02</span></div>
+            <img src="assets/icons/icon-target.png" alt="" class="step-illustration" />
+            <h4 data-i18n="step2_title">Define</h4><p data-i18n="step2_desc">We define a clear scope, system and success metrics that align strategy with value.</p>
+          </div>
+          <div class="step glass reveal">
+            <div class="step-top"><span class="step-badge"><img src="assets/icons/icon-cube.png" alt="" /></span><span class="step-n">03</span></div>
+            <img src="assets/icons/icon-cube.png" alt="" class="step-illustration" />
+            <h4 data-i18n="step3_title">Design</h4><p data-i18n="step3_desc">We craft intuitive experiences and robust architecture with elegance and clarity.</p>
+          </div>
+          <div class="step glass reveal">
+            <div class="step-top"><span class="step-badge"><img src="assets/icons/icon-gear.png" alt="" /></span><span class="step-n">04</span></div>
+            <img src="assets/icons/icon-gear.png" alt="" class="step-illustration" />
+            <h4 data-i18n="step4_title">Build</h4><p data-i18n="step4_desc">We build, test and ship production-ready software with quality and precision.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="why" class="why-section swirl-bg">
+      <img src="assets/decor-crystal.png" alt="" class="decor decor-why" aria-hidden="true" />
+      <img src="assets/decor-spheres.png" alt="" class="decor decor-why-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="sec-head reveal">
+          <span class="eye" data-i18n="why_eye">WHY WINGEN</span>
+          <h2><span data-i18n="why_h2_line1">SOFTWARE THAT</span><br /><em data-i18n="why_h2_line2">ACTUALLY SHIPS.</em></h2>
+        </div>
+
+        <div class="why-grid">
+          <div class="why-card glass reveal">
+            <span class="why-badge"><img src="assets/icons/icon-lightning.png" alt="" /></span>
+            <img src="assets/icons/icon-lightning.png" alt="" class="why-illustration" />
+            <h4 data-i18n="why1_title">Built to launch fast</h4>
+            <p data-i18n="why1_desc">Lean scopes and a hands-on process mean your first version reaches real users in weeks, not quarters.</p>
+          </div>
+          <div class="why-card glass reveal">
+            <span class="why-badge"><img src="assets/icons/icon-puzzle.png" alt="" /></span>
+            <img src="assets/icons/icon-puzzle.png" alt="" class="why-illustration" />
+            <h4 data-i18n="why2_title">Design that holds up</h4>
+            <p data-i18n="why2_desc">Every interface is built to stay clear and usable as your product grows — not just to look good in a demo.</p>
+          </div>
+          <div class="why-card glass reveal">
+            <span class="why-badge"><img src="assets/icons/icon-handshake.png" alt="" /></span>
+            <img src="assets/icons/icon-handshake.png" alt="" class="why-illustration" />
+            <h4 data-i18n="why3_title">A partner, not a vendor</h4>
+            <p data-i18n="why3_desc">Direct access to the people building your product, from the first sketch through every update after launch.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="showcase" class="showcase-section">
+      <img src="assets/decor-crystal.png" alt="" class="decor decor-showcase" aria-hidden="true" />
+      <img src="assets/decor-cubes3.png" alt="" class="decor decor-showcase-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="sec-head-left reveal">
+          <h2><span data-i18n="showcase_h2_line1">BUILT FOR</span><br /><em data-i18n="showcase_h2_line2">DESKTOP &amp; MOBILE.</em></h2>
+          <p data-i18n="showcase_desc">Every product we ship is designed to work everywhere your customers are — from a dashboard on desktop to the phone in their pocket.</p>
+        </div>
+
+        <div class="showcase-grid">
+          <div class="showcase-card glass reveal">
+            <img src="assets/showcase-workspace.png" alt="Project and task management dashboard on laptop, tablet and phone" loading="lazy" />
+            <h4 data-i18n="showcase1_title">Product &amp; workflow tools</h4>
+          </div>
+          <div class="showcase-card glass reveal">
+            <img src="assets/showcase-analytics.png" alt="Analytics dashboard with revenue and orders on laptop and phone" loading="lazy" />
+            <h4 data-i18n="showcase2_title">Data &amp; analytics dashboards</h4>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="services" class="services-section floor-bg">
+      <img src="assets/decor-cubes.png" alt="" class="decor decor-services" aria-hidden="true" />
+      <img src="assets/decor-crystal.png" alt="" class="decor decor-services-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="sec-head-left reveal">
+          <h2><span data-i18n="services_h2_line1">EVERY LAYER.</span><br /><em data-i18n="services_h2_line2">BEAUTIFULLY CONNECTED.</em></h2>
+          <p data-i18n="services_desc">From product strategy to intelligent automation, we design and build digital products that scale, adapt, and create lasting impact.</p>
+        </div>
+
+        <div class="service-grid">
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-target.png" alt="" /></span>
+            <img src="assets/icons/icon-target.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc1_title">Web &amp; App Development</h3>
+            <p data-i18n="svc1_desc">Fast, reliable websites and web apps — from customer-facing platforms to internal tools, built to actually get used.</p>
+          </div>
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-palette.png" alt="" /></span>
+            <img src="assets/icons/icon-palette.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc2_title">UI / UX Design</h3>
+            <p data-i18n="svc2_desc">Interfaces people understand immediately — clean, ready for any market or language, built for real users, not just demos.</p>
+          </div>
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-gear.png" alt="" /></span>
+            <img src="assets/icons/icon-gear.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc3_title">Automation Systems</h3>
+            <p data-i18n="svc3_desc">We connect your tools and workflows so repetitive work runs itself — quotes, notifications, follow-ups.</p>
+          </div>
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-cloud.png" alt="" /></span>
+            <img src="assets/icons/icon-cloud.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc4_title">Cloud &amp; Infrastructure</h3>
+            <p data-i18n="svc4_desc">Solid, secure hosting and backend setup — sized for where you are today, ready for where you're going.</p>
+          </div>
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-chart.png" alt="" /></span>
+            <img src="assets/icons/icon-chart.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc5_title">Data &amp; Analytics</h3>
+            <p data-i18n="svc5_desc">Dashboards and reporting that turn raw activity into numbers your team can actually act on.</p>
+          </div>
+          <div class="service-card glass reveal">
+            <span class="service-badge"><img src="assets/icons/icon-plug.png" alt="" /></span>
+            <img src="assets/icons/icon-plug.png" alt="" class="service-illustration" />
+            <h3 data-i18n="svc6_title">APIs &amp; Integrations</h3>
+            <p data-i18n="svc6_desc">Connecting the tools you already use — payments, messaging, CRMs — into one smooth system.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="contact-section floor-bg">
+      <img src="assets/decor-cards.png" alt="" class="decor decor-podium" aria-hidden="true" />
+      <img src="assets/decor-cubes.png" alt="" class="decor decor-contact-1" aria-hidden="true" />
+      <img src="assets/decor-pillars2.png" alt="" class="decor decor-contact-2" aria-hidden="true" />
+      <div class="wrap">
+        <div class="cta-card reveal">
+          <h2><span data-i18n="contact_h2_line1">LET'S BUILD</span><br /><span data-i18n="contact_h2_line2">SOMETHING</span> <em data-i18n="contact_h2_line3">EXCEPTIONAL.</em></h2>
+          <a href="mailto:mostafamostafa1e3@gmail.com" class="cta-email">
+            <img src="assets/icons/icon-envelope.png" alt="" class="cta-icon" /> mostafamostafa1e3@gmail.com ↗
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <div class="foot-brand">
+        <img src="assets/logo-icon.png" alt="WinGen" class="foot-logo" />
+        <p data-i18n="foot_tagline">Software, web &amp; automation studio.</p>
+      </div>
+      <nav class="foot-links">
+        <a href="#work" data-i18n="foot_work">Work</a>
+        <a href="#services" data-i18n="foot_services">Services</a>
+        <a href="mawa3id/" data-i18n="foot_booking">Booking Platform</a>
+        <a href="#contact" data-i18n="foot_contact">Contact</a>
+      </nav>
+      <p class="foot-copy">© 2026 WinGen</p>
+    </div>
+  </footer>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
