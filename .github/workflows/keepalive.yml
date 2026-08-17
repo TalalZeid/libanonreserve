@@ -1,17 +1,17 @@
 name: Supabase wach halten
 
 on:
-    schedule:
-      # Alle 3 Tage um 6 Uhr UTC -- deutlich oefter als die 7-Tage-Pausengrenze
-      - cron: "0 6 */3 * *"
-    workflow_dispatch:
-      # Erlaubt manuelles Starten ueber den "Run workflow"-Button zum Testen
+  schedule:
+    # Alle 3 Tage um 6 Uhr UTC -- deutlich oefter als die 7-Tage-Pausengrenze
+    - cron: "0 6 */3 * *"
+  workflow_dispatch:
+    # Erlaubt manuelles Starten ueber den "Run workflow"-Button zum Testen
 
-  jobs:
-    ping:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Supabase anpingen
-          run: |
-            curl -sf "https://qhgwycsyyvjqcomzoirz.supabase.co/rest/v1/categories?select=id&limit=1" \
-              -H "apikey: sb_publishable_J_QOv68bGEX2AkBi_Jwb4A_AVvVZc2L"
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Supabase anpingen
+        run: |
+          curl -sf "https://qhgwycsyyvjqcomzoirz.supabase.co/rest/v1/categories?select=id&limit=1" \
+            -H "apikey: sb_publishable_J_QOv68bGEX2AkBi_Jwb4A_AVvVZc2L"
