@@ -55,7 +55,8 @@ body {
 }
 
 html[dir="rtl"] body {
-  font-family: "Cairo", system-ui, sans-serif;
+  font-family: "Scheherazade New", "Traditional Arabic", serif;
+  line-height: 1.9;
 }
 
 body::before {
