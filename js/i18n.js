@@ -253,17 +253,11 @@ const translations = {
   }
 };
 
-const LANG_CYCLE = ["en", "ar", "de"];
 const LANG_LABELS = {
   en: "🇬🇧 English",
   ar: "🇸🇦 العربية",
   de: "🇩🇪 Deutsch"
 };
-
-function nextLang(lang) {
-  const idx = LANG_CYCLE.indexOf(lang);
-  return LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
-}
 
 function t(key) {
   const lang = getLang();
@@ -288,18 +282,48 @@ function applyLang() {
     el.textContent = t(el.getAttribute("data-i18n"));
   });
 
-  const toggleBtn = document.getElementById("lang-toggle");
-  if (toggleBtn) {
-    toggleBtn.textContent = LANG_LABELS[nextLang(lang)];
+  const currentLabel = document.querySelector("#lang-toggle .lang-current");
+  if (currentLabel) {
+    currentLabel.textContent = LANG_LABELS[lang];
   }
+  document.querySelectorAll(".lang-option").forEach((btn) => {
+    btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+  });
+}
+
+function closeLangMenu() {
+  const menu = document.getElementById("lang-menu");
+  const toggleBtn = document.getElementById("lang-toggle");
+  if (menu) menu.hidden = true;
+  if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   applyLang();
+  const dropdown = document.querySelector(".lang-dropdown");
   const toggleBtn = document.getElementById("lang-toggle");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      setLang(nextLang(getLang()));
+  const menu = document.getElementById("lang-menu");
+
+  if (toggleBtn && menu) {
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = !menu.hidden;
+      menu.hidden = isOpen;
+      toggleBtn.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    menu.querySelectorAll(".lang-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setLang(btn.getAttribute("data-lang"));
+        closeLangMenu();
+      });
     });
   }
+
+  document.addEventListener("click", (e) => {
+    if (dropdown && !dropdown.contains(e.target)) closeLangMenu();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLangMenu();
+  });
 });

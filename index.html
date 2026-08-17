@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Scheherazade+New:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=27" />
+  <link rel="stylesheet" href="css/style.css?v=28" />
 </head>
 <body>
   <header class="topbar" id="head">
@@ -25,7 +25,16 @@
         <a href="#contact" data-i18n="nav_about">About</a>
       </nav>
       <div class="nav-right">
-        <button type="button" id="lang-toggle" class="lang-toggle">🇸🇦 العربية</button>
+        <div class="lang-dropdown">
+          <button type="button" id="lang-toggle" class="lang-toggle" aria-haspopup="true" aria-expanded="false">
+            <span class="lang-current">🇬🇧 English</span><span class="lang-caret">▾</span>
+          </button>
+          <div class="lang-menu" id="lang-menu" hidden>
+            <button type="button" class="lang-option" data-lang="en">🇬🇧 English</button>
+            <button type="button" class="lang-option" data-lang="ar">🇸🇦 العربية</button>
+            <button type="button" class="lang-option" data-lang="de">🇩🇪 Deutsch</button>
+          </div>
+        </div>
         <a href="#contact" class="btn-cta" data-i18n="nav_cta">Start a project</a>
       </div>
     </div>
