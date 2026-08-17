@@ -83,7 +83,7 @@ const translations = {
     foot_contact: "Contact",
     foot_booking: "Booking Platform",
 
-    lang_toggle_label: "العربية"
+    lang_toggle_label: "🇸🇦 العربية"
   },
   ar: {
     nav_services: "الخدمات",
@@ -169,7 +169,7 @@ const translations = {
     foot_contact: "تواصل معنا",
     foot_booking: "منصة الحجز",
 
-    lang_toggle_label: "English"
+    lang_toggle_label: "🇬🇧 English"
   }
 };
 

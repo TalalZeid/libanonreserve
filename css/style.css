@@ -325,6 +325,12 @@ button:focus-visible {
   padding: 90px 0 50px;
 }
 
+@media (max-width: 640px) {
+  .hero {
+    padding: 36px 0 40px;
+  }
+}
+
 .hero-grid {
   display: grid;
   grid-template-columns: 0.72fr 1.28fr;
@@ -597,11 +603,17 @@ section {
 .decor-podium {
   width: min(560px, 80%);
   bottom: -30px;
-  inset-inline-start: 50%;
+  left: 50%;
   transform: translateX(-50%);
   opacity: 0.8;
   z-index: -1;
   animation: none;
+}
+
+@media (max-width: 640px) {
+  .decor-podium {
+    display: none;
+  }
 }
 
 .decor-contact-1 {
