@@ -297,6 +297,10 @@ button:focus-visible {
   transform: rotate(180deg);
 }
 
+.lang-menu[hidden] {
+  display: none;
+}
+
 .lang-menu {
   position: absolute;
   top: calc(100% + 8px);
