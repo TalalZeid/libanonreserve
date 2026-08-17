@@ -1,6 +1,6 @@
 .DS_Store
 supabase/.temp/
-mawa3id/supabase/.temp/
+booking/supabase/.temp/
 # Workflow-Datei ohne "workflow"-Token-Scope nicht pushbar -- manuell ueber
 # GitHub-Weboberflaeche hinzufuegen, siehe .github/workflows/keepalive.yml
 .github/workflows/

@@ -352,19 +352,49 @@ function applyLang() {
     el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
   });
 
-  const toggleBtn = document.getElementById("lang-toggle");
-  if (toggleBtn) {
-    toggleBtn.textContent = lang === "ar" ? "🇬🇧 English" : "🇱🇧 العربية";
+  const currentLabel = document.querySelector("#lang-toggle .lang-current");
+  if (currentLabel) {
+    currentLabel.textContent = lang === "ar" ? "🇸🇦 العربية" : "🇬🇧 English";
   }
+  document.querySelectorAll(".lang-option").forEach((btn) => {
+    btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
+  });
+}
+
+function closeLangMenu() {
+  const menu = document.getElementById("lang-menu");
+  const toggleBtn = document.getElementById("lang-toggle");
+  if (menu) menu.hidden = true;
+  if (toggleBtn) toggleBtn.setAttribute("aria-expanded", "false");
 }
 
 document.addEventListener("DOMContentLoaded", () => {
   applyLang();
+  const dropdown = document.querySelector(".lang-dropdown");
   const toggleBtn = document.getElementById("lang-toggle");
-  if (toggleBtn) {
-    toggleBtn.addEventListener("click", () => {
-      setLang(getLang() === "ar" ? "en" : "ar");
-      if (typeof onLangChange === "function") onLangChange();
+  const menu = document.getElementById("lang-menu");
+
+  if (toggleBtn && menu) {
+    toggleBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isOpen = !menu.hidden;
+      menu.hidden = isOpen;
+      toggleBtn.setAttribute("aria-expanded", String(!isOpen));
+    });
+
+    menu.querySelectorAll(".lang-option").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        setLang(btn.getAttribute("data-lang"));
+        closeLangMenu();
+        if (typeof onLangChange === "function") onLangChange();
+      });
     });
   }
+
+  document.addEventListener("click", (e) => {
+    if (dropdown && !dropdown.contains(e.target)) closeLangMenu();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLangMenu();
+  });
 });
