@@ -81,9 +81,7 @@ const translations = {
     foot_work: "Work",
     foot_services: "Services",
     foot_contact: "Contact",
-    foot_booking: "Booking Platform",
-
-    lang_toggle_label: "🇸🇦 العربية"
+    foot_booking: "Booking Platform"
   },
   ar: {
     nav_services: "الخدمات",
@@ -167,11 +165,105 @@ const translations = {
     foot_work: "أعمالنا",
     foot_services: "الخدمات",
     foot_contact: "تواصل معنا",
-    foot_booking: "منصة الحجز",
+    foot_booking: "منصة الحجز"
+  },
+  de: {
+    nav_services: "Leistungen",
+    nav_work: "Arbeiten",
+    nav_process: "Prozess",
+    nav_about: "Über uns",
+    nav_cta: "Projekt starten",
 
-    lang_toggle_label: "🇬🇧 English"
+    hero_kicker: "SOFTWARE · WEB · AUTOMATISIERUNG",
+    hero_h1_line1: "WIR BAUEN",
+    hero_h1_line2: "SOFTWARE, DIE LÄUFT.",
+    hero_desc: "WinGen entwirft, baut und liefert digitale Produkte von Anfang bis Ende — Web-Apps, Automatisierungssysteme und die Infrastruktur dahinter.",
+    hero_work_btn: "Unsere Arbeiten ↓",
+    chip_lang_title: "Jede Sprache",
+    chip_lang_sub: "Mehrsprachig einsatzbereit",
+    chip_pwa_title: "Installierbare PWA",
+    chip_pwa_sub: "Funktioniert offline",
+
+    projects_eye: "UNSERE ARBEITEN",
+    projects_h2_line1: "PRODUKTE, DIE WIR",
+    projects_h2_line2: "TATSÄCHLICH AUSGELIEFERT HABEN.",
+    projects_desc: "Eine wachsende Sammlung echter Produkte, von Anfang bis Ende gebaut und heute produktiv im Einsatz.",
+    project1_tag: "Dorf-Dienstleistungsbuchung · Libanon",
+    project1_title: "Buchungsplattform",
+    project1_desc: "Hilft lokalen Unternehmen und Dienstleistern in einem libanesischen Dorf, gefunden und gebucht zu werden — Kunden stöbern, buchen und erhalten eine Bestätigung per WhatsApp, alles in einer zweisprachigen (Arabisch/Englisch) App.",
+    project1_pill1: "Zweisprachig AR / EN",
+    project1_pill2: "WhatsApp-Bestätigungen",
+    project1_pill3: "Installierbare App",
+    project1_link: "Plattform besuchen ↗",
+
+    process_eye: "UNSER PROZESS",
+    process_h2_line1: "VON DER ERSTEN IDEE",
+    process_h2_line2: "BIS INS LETZTE DETAIL.",
+    process_desc: "Ein praxisnaher Studio-Prozess, der Produktdenken, Design und Engineering verbindet, um Software zu bauen, die überzeugt — und mit dir wächst.",
+    step1_title: "Entdecken",
+    step1_desc: "Wir beginnen damit, dein Geschäft, deine Nutzer und deine Ziele zu verstehen, um echte Chancen zu erkennen.",
+    step2_title: "Definieren",
+    step2_desc: "Wir definieren einen klaren Umfang, ein System und Erfolgskennzahlen, die Strategie und Wert verbinden.",
+    step3_title: "Design",
+    step3_desc: "Wir gestalten intuitive Erlebnisse und eine robuste Architektur mit Eleganz und Klarheit.",
+    step4_title: "Umsetzung",
+    step4_desc: "Wir bauen, testen und liefern produktionsreife Software mit Qualität und Präzision.",
+
+    why_eye: "WARUM WINGEN",
+    why_h2_line1: "SOFTWARE, DIE",
+    why_h2_line2: "TATSÄCHLICH LÄUFT.",
+    why1_title: "Schnell einsatzbereit",
+    why1_desc: "Schlanke Scopes und ein praxisnaher Prozess bedeuten: deine erste Version erreicht echte Nutzer in Wochen, nicht in Quartalen.",
+    why2_title: "Design, das hält",
+    why2_desc: "Jede Oberfläche bleibt klar und nutzbar, während dein Produkt wächst — nicht nur gut aussehend in einer Demo.",
+    why3_title: "Ein Partner, kein Dienstleister",
+    why3_desc: "Direkter Zugang zu den Menschen, die dein Produkt bauen, vom ersten Entwurf bis zu jedem Update nach dem Launch.",
+
+    showcase_h2_line1: "GEBAUT FÜR",
+    showcase_h2_line2: "DESKTOP & MOBIL.",
+    showcase_desc: "Jedes Produkt, das wir ausliefern, funktioniert überall dort, wo deine Kunden sind — vom Dashboard am Desktop bis zum Handy in ihrer Tasche.",
+    showcase1_title: "Produkt- & Workflow-Tools",
+    showcase2_title: "Daten- & Analyse-Dashboards",
+
+    services_h2_line1: "JEDE EBENE.",
+    services_h2_line2: "WUNDERSCHÖN VERBUNDEN.",
+    services_desc: "Von Produktstrategie bis intelligenter Automatisierung entwerfen und bauen wir digitale Produkte, die wachsen, sich anpassen und bleibende Wirkung schaffen.",
+    svc1_title: "Web- & App-Entwicklung",
+    svc1_desc: "Schnelle, zuverlässige Websites und Web-Apps — von kundenorientierten Plattformen bis zu internen Tools, gebaut, um wirklich genutzt zu werden.",
+    svc2_title: "UI / UX Design",
+    svc2_desc: "Oberflächen, die man sofort versteht — klar, bereit für jeden Markt und jede Sprache, gebaut für echte Nutzer, nicht nur für Demos.",
+    svc3_title: "Automatisierungssysteme",
+    svc3_desc: "Wir verbinden deine Tools und Abläufe, damit sich wiederkehrende Arbeit von selbst erledigt — Angebote, Benachrichtigungen, Nachfassen.",
+    svc4_title: "Cloud & Infrastruktur",
+    svc4_desc: "Solides, sicheres Hosting und Backend-Setup — passend zu deinem heutigen Stand, bereit für das, wohin du willst.",
+    svc5_title: "Daten & Analytics",
+    svc5_desc: "Dashboards und Reporting, die rohe Aktivität in Zahlen verwandeln, auf die dein Team wirklich reagieren kann.",
+    svc6_title: "APIs & Integrationen",
+    svc6_desc: "Verbindet die Tools, die du bereits nutzt — Zahlungen, Messaging, CRMs — zu einem reibungslosen System.",
+
+    contact_h2_line1: "LASS UNS ETWAS",
+    contact_h2_line2: "AUSSERGEWÖHNLICHES",
+    contact_h2_line3: "BAUEN.",
+
+    foot_tagline: "Software-, Web- und Automatisierungsstudio.",
+    foot_work: "Arbeiten",
+    foot_services: "Leistungen",
+    foot_contact: "Kontakt",
+    foot_booking: "Buchungsplattform"
   }
 };
+
+const LANG_CYCLE = ["en", "ar", "de"];
+const LANG_LABELS = {
+  en: "🇬🇧 English",
+  ar: "🇸🇦 العربية",
+  de: "🇩🇪 Deutsch"
+};
+
+function nextLang(lang) {
+  const idx = LANG_CYCLE.indexOf(lang);
+  return LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
+}
 
 function t(key) {
   const lang = getLang();
@@ -198,7 +290,7 @@ function applyLang() {
 
   const toggleBtn = document.getElementById("lang-toggle");
   if (toggleBtn) {
-    toggleBtn.textContent = t("lang_toggle_label");
+    toggleBtn.textContent = LANG_LABELS[nextLang(lang)];
   }
 }
 
@@ -207,7 +299,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggleBtn = document.getElementById("lang-toggle");
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
-      setLang(getLang() === "ar" ? "en" : "ar");
+      setLang(nextLang(getLang()));
     });
   }
 });
