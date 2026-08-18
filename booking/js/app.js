@@ -196,6 +196,12 @@ async function loadCategories() {
   return allCategories;
 }
 
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str == null ? "" : String(str);
+  return div.innerHTML;
+}
+
 function categoryLabel(category) {
   if (!category) return "";
   return getLang() === "ar" ? category.name_ar : category.name_en;

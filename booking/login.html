@@ -217,6 +217,16 @@
             <button type="button" id="create-owner-btn" data-i18n="admin_create_owner_button">إنشاء الحساب</button>
             <p id="create-owner-result"></p>
           </div>
+
+          <button type="button" id="toggle-reset-password" class="chip-btn" data-i18n="admin_toggle_reset_password" hidden>
+            🔑 تغيير كلمة المرور
+          </button>
+          <div id="reset-password-box" class="expandable-box" hidden>
+            <label for="reset-owner-password" data-i18n="admin_reset_owner_password">كلمة المرور الجديدة</label>
+            <input type="password" id="reset-owner-password" />
+            <button type="button" id="reset-owner-password-btn" data-i18n="admin_reset_owner_password_button">تحديث كلمة المرور</button>
+            <p id="reset-owner-password-result"></p>
+          </div>
         </div>
 
         <div class="form-section">

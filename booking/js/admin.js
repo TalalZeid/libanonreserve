@@ -232,6 +232,7 @@ function startEdit(id) {
   document.getElementById("end-time").value = p.end_time.slice(0, 5);
   document.getElementById("slot-minutes").value = p.slot_minutes;
   document.getElementById("owner-email").value = adminProviderOwners[p.id] || "";
+  document.getElementById("toggle-reset-password").hidden = !adminProviderOwners[p.id];
   document.getElementById("featured-toggle").checked = !!p.featured;
   document.getElementById("subscription-until").value = p.subscription_active_until || "";
   updateSubscriptionHint();
@@ -279,11 +280,38 @@ function resetForm() {
   document.getElementById("cancel-edit-btn").hidden = true;
   document.getElementById("new-category-box").hidden = true;
   document.getElementById("new-owner-box").hidden = true;
+  document.getElementById("toggle-reset-password").hidden = true;
+  document.getElementById("reset-password-box").hidden = true;
   renderAdminProviderList();
 }
 
 document.getElementById("cancel-edit-btn").addEventListener("click", resetForm);
 document.getElementById("new-provider-btn").addEventListener("click", resetForm);
+
+document.getElementById("toggle-reset-password").addEventListener("click", () => {
+  const box = document.getElementById("reset-password-box");
+  box.hidden = !box.hidden;
+});
+
+document.getElementById("reset-owner-password-btn").addEventListener("click", async () => {
+  const email = document.getElementById("owner-email").value.trim();
+  const password = document.getElementById("reset-owner-password").value;
+  const resultEl = document.getElementById("reset-owner-password-result");
+  if (!email || !password) return;
+
+  resultEl.textContent = "...";
+  const { error } = await sb.functions.invoke("create-provider-user", {
+    body: { email, password }
+  });
+
+  if (error) {
+    resultEl.textContent = t("admin_reset_owner_password_error") + " (" + error.message + ")";
+    return;
+  }
+
+  resultEl.textContent = t("admin_reset_owner_password_success");
+  document.getElementById("reset-owner-password").value = "";
+});
 
 // Zeigt an, ob das Abo aktiv/bald ablaufend/abgelaufen ist, direkt unter dem Datumsfeld.
 function updateSubscriptionHint() {

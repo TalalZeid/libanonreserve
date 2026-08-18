@@ -5,6 +5,8 @@ const MIN_BOOKINGS_TO_SHOW = 10;
 let currentProvider = null;
 let selectedSlot = null;
 let currentBookingCount = 0;
+let currentReviews = [];
+let selectedReviewRating = 0;
 
 function findCachedProvider(id) {
   try {
@@ -57,6 +59,7 @@ async function loadProvider() {
 
   const { data: countResult } = await sb.rpc("get_booking_count", { p_provider_id: providerId });
   currentBookingCount = countResult || 0;
+  await loadReviews();
   renderProviderInfo();
   document.getElementById("booking-section").hidden = false;
 
@@ -67,6 +70,121 @@ async function loadProvider() {
   dateInput.addEventListener("change", loadSlotsForSelectedDate);
   loadSlotsForSelectedDate();
   checkCancelRequest();
+}
+
+async function loadReviews() {
+  const { data } = await sb
+    .from("reviews")
+    .select("*")
+    .eq("provider_id", providerId)
+    .order("created_at", { ascending: false });
+  currentReviews = data || [];
+}
+
+function starsHtml(rating) {
+  const rounded = Math.round(rating);
+  let html = "";
+  for (let i = 1; i <= 5; i++) html += i <= rounded ? "★" : "☆";
+  return html;
+}
+
+function averageRating() {
+  if (!currentReviews.length) return 0;
+  return currentReviews.reduce((sum, r) => sum + r.rating, 0) / currentReviews.length;
+}
+
+function reviewsHtml() {
+  const avg = averageRating();
+  return `
+    <div class="reviews-section">
+      <h3 class="reviews-heading">${t("reviews_title")}</h3>
+      ${
+        currentReviews.length
+          ? `<div class="reviews-summary">
+              <span class="reviews-stars">${starsHtml(avg)}</span>
+              <span class="reviews-avg">${avg.toFixed(1)}</span>
+              <span class="reviews-count">${t("reviews_count_label").replace("{count}", String(currentReviews.length))}</span>
+            </div>`
+          : `<p class="reviews-empty">${t("reviews_empty")}</p>`
+      }
+      <div class="reviews-list">
+        ${currentReviews
+          .map(
+            (r) => `
+          <div class="review-item">
+            <div class="review-item-header">
+              <span class="review-stars">${starsHtml(r.rating)}</span>
+              <span class="review-author">${escapeHtml(r.customer_name)}</span>
+            </div>
+            ${r.comment ? `<p class="review-comment">${escapeHtml(r.comment)}</p>` : ""}
+          </div>`
+          )
+          .join("")}
+      </div>
+      <form id="review-form" class="review-form">
+        <label for="review-name">${t("review_form_name_label")}</label>
+        <input type="text" id="review-name" required />
+        <label>${t("review_form_rating_label")}</label>
+        <div class="star-picker" id="star-picker">
+          ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-picker-btn" data-value="${n}" aria-label="${n}">☆</button>`).join("")}
+        </div>
+        <label for="review-comment">${t("review_form_comment_label")}</label>
+        <textarea id="review-comment"></textarea>
+        <button type="submit">${t("review_form_submit")}</button>
+        <p id="review-form-result"></p>
+      </form>
+    </div>
+  `;
+}
+
+function wireReviewForm() {
+  const picker = document.getElementById("star-picker");
+  const form = document.getElementById("review-form");
+  if (!picker || !form) return;
+
+  selectedReviewRating = 0;
+  const buttons = picker.querySelectorAll(".star-picker-btn");
+
+  function paintStars(value) {
+    buttons.forEach((btn) => {
+      btn.textContent = Number(btn.getAttribute("data-value")) <= value ? "★" : "☆";
+    });
+  }
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedReviewRating = Number(btn.getAttribute("data-value"));
+      paintStars(selectedReviewRating);
+    });
+  });
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const resultEl = document.getElementById("review-form-result");
+    const name = document.getElementById("review-name").value.trim();
+    const comment = document.getElementById("review-comment").value.trim();
+
+    if (!name || !selectedReviewRating) {
+      resultEl.textContent = t("review_form_missing");
+      return;
+    }
+
+    resultEl.textContent = "...";
+    const { error } = await sb.from("reviews").insert({
+      provider_id: providerId,
+      customer_name: name,
+      rating: selectedReviewRating,
+      comment: comment || null
+    });
+
+    if (error) {
+      resultEl.textContent = t("review_submit_error");
+      return;
+    }
+
+    await loadReviews();
+    renderProviderInfo();
+  });
 }
 
 const PIN_ICON = `<svg class="icon-inline" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -131,6 +249,11 @@ function renderProviderInfo() {
       <span class="provider-category">${categoryLabel(p.category)}</span>
       <h1 class="provider-name">${providerName(p)}</h1>
       ${!locked && currentBookingCount >= MIN_BOOKINGS_TO_SHOW ? `<p class="booking-count">${PEOPLE_ICON} ${t("booking_count_label").replace("{count}", formatTime(String(currentBookingCount)))}</p>` : ""}
+      ${
+        !locked && currentReviews.length
+          ? `<p class="rating-badge"><span class="reviews-stars">${starsHtml(averageRating())}</span> ${averageRating().toFixed(1)} (${currentReviews.length})</p>`
+          : ""
+      }
     </div>
     ${
       locked
@@ -152,17 +275,27 @@ function renderProviderInfo() {
             <a class="recommend-btn" target="_blank" rel="noopener" href="${buildRecommendLink()}">
               ${SHARE_ICON} ${t("recommend_button")}
             </a>
+            ${reviewsHtml()}
           </div>`
     }
   `;
 
   if (locked) return;
 
+  wireReviewForm();
+
   if (hasLocation) {
-    const map = L.map("provider-map", { zoomControl: false, attributionControl: false }).setView(
-      [p.latitude, p.longitude],
-      16
-    );
+    const map = L.map("provider-map", {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      touchZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      tap: false
+    }).setView([p.latitude, p.longitude], 16);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
     L.marker([p.latitude, p.longitude]).addTo(map);
   }

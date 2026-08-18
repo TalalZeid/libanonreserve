@@ -62,6 +62,42 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: "Email and password required" }, 400);
   }
 
+  // Existiert schon ein Auth-User mit dieser E-Mail? Dann Passwort aktualisieren
+  // statt einen neuen Account anzulegen (z.B. wenn der Admin das Passwort
+  // eines bestehenden Firmen-Logins zuruecksetzt).
+  let existingUserId = null;
+  let page = 1;
+  while (!existingUserId) {
+    const { data: pageData, error: listError } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage: 200
+    });
+    if (listError) {
+      return jsonResponse({ error: listError.message }, 400);
+    }
+    const match = pageData.users.find((u) => u.email === email);
+    if (match) {
+      existingUserId = match.id;
+      break;
+    }
+    if (pageData.users.length < 200) break;
+    page += 1;
+  }
+
+  if (existingUserId) {
+    const { data: updatedUser, error: updateError } = await adminClient.auth.admin.updateUserById(
+      existingUserId,
+      { password }
+    );
+    if (updateError) {
+      return jsonResponse({ error: updateError.message }, 400);
+    }
+    return jsonResponse(
+      { user: { id: updatedUser.user.id, email: updatedUser.user.email }, updated: true },
+      200
+    );
+  }
+
   const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
     email,
     password,
@@ -72,5 +108,8 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: createError.message }, 400);
   }
 
-  return jsonResponse({ user: { id: newUser.user.id, email: newUser.user.email } }, 200);
+  return jsonResponse(
+    { user: { id: newUser.user.id, email: newUser.user.email }, updated: false },
+    200
+  );
 });

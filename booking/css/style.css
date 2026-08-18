@@ -1630,6 +1630,165 @@ h1, h2, h3 {
   flex-shrink: 0;
 }
 
+.rating-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 0;
+  padding: 5px 11px;
+  border-radius: var(--radius-sm);
+  background: var(--gold-pale);
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+
+.reviews-stars {
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+/* ===== Bewertungen ===== */
+
+.reviews-section {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.reviews-heading {
+  font-size: 1.05rem;
+  margin: 0 0 10px;
+}
+
+.reviews-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 1.1rem;
+}
+
+.reviews-avg {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.reviews-count {
+  color: var(--ink-mute);
+  font-size: 0.85rem;
+}
+
+.reviews-empty {
+  color: var(--ink-mute);
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.review-item {
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+}
+
+.review-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.review-author {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.review-comment {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.review-form {
+  padding-top: 6px;
+}
+
+.review-form label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin: 12px 0 6px;
+}
+
+.review-form input,
+.review-form textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: white;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.review-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.review-form input:focus,
+.review-form textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+}
+
+.star-picker {
+  display: flex;
+  gap: 4px;
+}
+
+.star-picker-btn {
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--gold);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.review-form button[type="submit"] {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px 20px;
+  background: linear-gradient(135deg, var(--primary-bright), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -10px rgba(20, 90, 69, 0.5);
+  transition: transform 0.25s var(--ease), box-shadow 0.25s ease;
+}
+
+.review-form button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -10px rgba(20, 90, 69, 0.6);
+}
+
 /* ===== Weiterempfehlen / Kalender-Buttons ===== */
 
 .recommend-btn {
