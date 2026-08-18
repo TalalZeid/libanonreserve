@@ -1354,7 +1354,16 @@ h1, h2, h3 {
 }
 
 .dashboard-form {
-  max-width: 640px;
+  max-width: 1180px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  align-items: start;
+}
+
+.dashboard-form-header,
+.dashboard-form-footer {
+  grid-column: 1 / -1;
 }
 
 .dashboard-form-header {
@@ -1376,8 +1385,17 @@ h1, h2, h3 {
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: var(--radius-xl);
   padding: 24px;
-  margin: 20px 0;
   box-shadow: var(--shadow);
+}
+
+.form-section-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 860px) {
+  .dashboard-form {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-section-title {
