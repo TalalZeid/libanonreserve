@@ -1703,6 +1703,16 @@ h1, h2, h3 {
   margin-bottom: 16px;
 }
 
+.reviews-locked-notice {
+  color: var(--ink-mute);
+  font-size: 0.85rem;
+  font-style: italic;
+  padding: 12px 14px;
+  background: var(--paper-2);
+  border-radius: var(--radius-sm);
+  margin: 0;
+}
+
 .reviews-list {
   display: flex;
   flex-direction: column;

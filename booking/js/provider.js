@@ -17,6 +17,28 @@ function findCachedProvider(id) {
   }
 }
 
+// Merkt sich lokal, dass dieser Browser bei diesem Anbieter gebucht hat --
+// nur dann darf eine Bewertung abgegeben werden. Kein echter Schutz gegen
+// technisch versierte Nutzer, aber verhindert spontane Bewertungen von
+// Leuten, die nie einen Termin hatten.
+function getBookedProviders() {
+  try {
+    return JSON.parse(localStorage.getItem("booked_providers_v1")) || {};
+  } catch {
+    return {};
+  }
+}
+
+function markProviderBooked(id, name) {
+  const booked = getBookedProviders();
+  booked[id] = name;
+  localStorage.setItem("booked_providers_v1", JSON.stringify(booked));
+}
+
+function bookedCustomerName(id) {
+  return getBookedProviders()[id] || null;
+}
+
 async function loadProvider() {
   if (!providerId) {
     window.location.href = "index.html";
@@ -121,18 +143,22 @@ function reviewsHtml() {
           )
           .join("")}
       </div>
-      <form id="review-form" class="review-form">
-        <label for="review-name">${t("review_form_name_label")}</label>
-        <input type="text" id="review-name" required />
-        <label>${t("review_form_rating_label")}</label>
-        <div class="star-picker" id="star-picker">
-          ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-picker-btn" data-value="${n}" aria-label="${n}">☆</button>`).join("")}
-        </div>
-        <label for="review-comment">${t("review_form_comment_label")}</label>
-        <textarea id="review-comment"></textarea>
-        <button type="submit">${t("review_form_submit")}</button>
-        <p id="review-form-result"></p>
-      </form>
+      ${
+        bookedCustomerName(providerId)
+          ? `<form id="review-form" class="review-form">
+              <label for="review-name">${t("review_form_name_label")}</label>
+              <input type="text" id="review-name" required value="${escapeHtml(bookedCustomerName(providerId))}" />
+              <label>${t("review_form_rating_label")}</label>
+              <div class="star-picker" id="star-picker">
+                ${[1, 2, 3, 4, 5].map((n) => `<button type="button" class="star-picker-btn" data-value="${n}" aria-label="${n}">☆</button>`).join("")}
+              </div>
+              <label for="review-comment">${t("review_form_comment_label")}</label>
+              <textarea id="review-comment"></textarea>
+              <button type="submit">${t("review_form_submit")}</button>
+              <p id="review-form-result"></p>
+            </form>`
+          : `<p class="reviews-locked-notice">${t("review_form_booking_required")}</p>`
+      }
     </div>
   `;
 }
@@ -419,6 +445,8 @@ document.getElementById("booking-form").addEventListener("submit", async (e) => 
     }
     return;
   }
+
+  markProviderBooked(providerId, name);
 
   const waLink = buildWhatsappLink(name, date, selectedSlot);
   const cancelUrl = `${window.location.origin}${window.location.pathname}?id=${providerId}&cancel=${appointmentId}&date=${date}&time=${selectedSlot}`;
