@@ -67,7 +67,7 @@ async function loadProvider() {
         return;
       }
     }
-    infoEl.innerHTML = `<p>${error ? error.message : "Not found"}</p>`;
+    infoEl.innerHTML = `<p>${error ? friendlyErrorMessage(error) : "Not found"}</p>`;
     return;
   }
 
@@ -362,7 +362,7 @@ async function loadSlotsForSelectedDate() {
   });
 
   if (error) {
-    statusEl.textContent = error.message;
+    statusEl.textContent = friendlyErrorMessage(error);
     return;
   }
 
@@ -417,7 +417,7 @@ document.getElementById("booking-form").addEventListener("submit", async (e) => 
   e.preventDefault();
   const date = document.getElementById("date-input").value;
   const name = document.getElementById("customer-name").value.trim();
-  const phone = document.getElementById("customer-phone").value.trim();
+  const phone = normalizeLebanonPhoneDigits(document.getElementById("customer-phone").value.trim());
   const resultEl = document.getElementById("booking-result");
   const appointmentId = crypto.randomUUID();
 

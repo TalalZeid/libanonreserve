@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Scheherazade+New:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=42" />
+  <link rel="stylesheet" href="css/style.css?v=45" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body>
@@ -96,7 +96,10 @@
             <input type="text" id="customer-name" required data-i18n-placeholder="provider_form_name" />
 
             <label for="customer-phone" data-i18n="provider_form_phone">رقم الهاتف</label>
-            <input type="tel" id="customer-phone" required data-i18n-placeholder="provider_form_phone_placeholder" />
+            <div class="phone-input-group">
+              <span class="phone-prefix">🇱🇧 +961</span>
+              <input type="tel" id="customer-phone" required data-i18n-placeholder="provider_form_phone_placeholder" />
+            </div>
 
             <label class="reminder-checkbox" for="reminder-checkbox">
               <input type="checkbox" id="reminder-checkbox" />

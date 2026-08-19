@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Scheherazade+New:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=42" />
+  <link rel="stylesheet" href="css/style.css?v=45" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="admin-body">
@@ -138,8 +138,11 @@
 
         <div class="form-section">
           <h3 class="form-section-title" data-i18n="form_section_contact">التواصل والعنوان</h3>
-          <label for="phone" data-i18n="admin_phone">رقم واتساب (بدون + وبدون مسافات، مثال: 9613xxxxxxx)</label>
-          <input type="text" id="phone" required pattern="[0-9]+" />
+          <label for="phone" data-i18n="admin_phone">رقم واتساب</label>
+          <div class="phone-input-group">
+            <span class="phone-prefix">🇱🇧 +961</span>
+            <input type="text" id="phone" required pattern="[0-9]+" data-i18n-placeholder="admin_phone_placeholder" />
+          </div>
           <label for="address" data-i18n="admin_address">العنوان</label>
           <input type="text" id="address" />
         </div>
@@ -362,6 +365,14 @@
       <button type="button" id="qr-print-btn" class="btn-secondary btn-block" data-i18n="admin_qr_print">
         طباعة
       </button>
+    </div>
+  </div>
+
+  <div id="appt-modal" class="modal-overlay" hidden>
+    <div class="modal-card surface-card modal-card-wide">
+      <button type="button" id="appt-modal-close" class="modal-close">&times;</button>
+      <h3 id="appt-modal-title"></h3>
+      <div id="appt-modal-list"></div>
     </div>
   </div>
 

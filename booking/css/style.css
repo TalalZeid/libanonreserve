@@ -1332,13 +1332,54 @@ h1, h2, h3 {
   overflow-y: auto;
 }
 
-.provider-list-item {
+.phone-input-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+}
+
+.phone-prefix {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--paper-2);
+  color: var(--ink-mute);
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.phone-input-group input {
+  flex: 1;
+  min-width: 0;
+}
+
+.provider-list-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
   padding: 9px 8px;
   border-radius: var(--radius-sm);
   transition: background 0.2s ease;
+}
+
+.provider-list-item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.provider-list-item-actions .icon-btn {
+  width: 30px;
+  height: 30px;
+}
+
+.provider-list-item-actions .icon-btn svg {
+  width: 15px;
+  height: 15px;
 }
 
 .provider-list-item:hover {
@@ -2137,6 +2178,13 @@ h1, h2, h3 {
   margin: 0 0 16px;
 }
 
+.modal-card-wide {
+  max-width: 560px;
+  text-align: start;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
 .qr-canvas-wrap {
   display: flex;
   justify-content: center;
@@ -2195,7 +2243,8 @@ h1, h2, h3 {
   top: 6.5%;
   width: 12.34%;
   height: 8.23%;
-  object-fit: contain;
+  object-fit: cover;
+  border-radius: 50%;
 }
 
 .qr-print-card-name {

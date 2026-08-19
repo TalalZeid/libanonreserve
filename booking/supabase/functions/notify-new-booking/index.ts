@@ -5,13 +5,24 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendPush } from "../_shared/fcm.ts";
 
+// Noetig, da der Admin diese Funktion jetzt auch direkt aus dem Browser
+// aufruft (Test-Benachrichtigung), nicht nur serverseitig ueber den DB-Trigger.
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type"
+};
+
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   try {
     const payload = await req.json();
     const record = payload.record;
 
     if (!record || record.blocked) {
-      return new Response("skip", { status: 200 });
+      return new Response("skip", { status: 200, headers: corsHeaders });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -25,7 +36,7 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (!owner?.push_token) {
-      return new Response("no push token", { status: 200 });
+      return new Response("no push token", { status: 200, headers: corsHeaders });
     }
 
     await sendPush(
@@ -34,8 +45,8 @@ Deno.serve(async (req) => {
       `${record.customer_name} — ${record.appointment_date} ${String(record.appointment_time).slice(0, 5)}`
     );
 
-    return new Response("ok", { status: 200 });
+    return new Response("ok", { status: 200, headers: corsHeaders });
   } catch (err) {
-    return new Response(String(err), { status: 500 });
+    return new Response(String(err), { status: 500, headers: corsHeaders });
   }
 });

@@ -52,7 +52,7 @@ async function loadProviders() {
   } catch (err) {
     const cached = loadProvidersCache();
     if (!cached) {
-      document.getElementById("provider-list").innerHTML = `<p>${err.message || err}</p>`;
+      document.getElementById("provider-list").innerHTML = `<p>${friendlyErrorMessage(err)}</p>`;
       return;
     }
     allProviders = cached.providers;

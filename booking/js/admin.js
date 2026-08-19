@@ -197,6 +197,35 @@ const QR_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
   <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>
 </svg>`;
 
+const BELL_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+  <path d="M6 8a6 6 0 0 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6Z" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M10 19a2 2 0 0 0 4 0" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>`;
+
+async function sendTestPush(provider) {
+  const { data, error } = await sb.functions.invoke("notify-new-booking", {
+    body: {
+      record: {
+        provider_id: provider.id,
+        customer_name: t("admin_test_push_customer_name"),
+        appointment_date: new Date().toISOString().split("T")[0],
+        appointment_time: "00:00:00",
+        blocked: false
+      }
+    }
+  });
+
+  if (error) {
+    showInfoModal(providerName(provider), t("admin_test_push_error") + " (" + error.message + ")");
+    return;
+  }
+  if (data === "no push token") {
+    showInfoModal(providerName(provider), t("admin_test_push_no_token"));
+    return;
+  }
+  showInfoModal(providerName(provider), t("admin_test_push_sent"));
+}
+
 const QR_CARD_W = 1024;
 const QR_CARD_H = 1536;
 const QR_CARD_SLOT = { x: 0.2432, y: 0.2233, w: 0.5117, h: 0.3411 };
@@ -226,13 +255,16 @@ async function buildQrPrintCard(url, name) {
   ]);
   ctx.drawImage(bg, 0, 0, QR_CARD_W, QR_CARD_H);
 
-  ctx.drawImage(
-    logo,
-    QR_CARD_W * QR_CARD_LOGO_SLOT.x,
-    QR_CARD_H * QR_CARD_LOGO_SLOT.y,
-    QR_CARD_W * QR_CARD_LOGO_SLOT.w,
-    QR_CARD_H * QR_CARD_LOGO_SLOT.h
-  );
+  const logoX = QR_CARD_W * QR_CARD_LOGO_SLOT.x;
+  const logoY = QR_CARD_H * QR_CARD_LOGO_SLOT.y;
+  const logoW = QR_CARD_W * QR_CARD_LOGO_SLOT.w;
+  const logoH = QR_CARD_H * QR_CARD_LOGO_SLOT.h;
+  ctx.save();
+  ctx.beginPath();
+  ctx.ellipse(logoX + logoW / 2, logoY + logoH / 2, logoW / 2, logoH / 2, 0, 0, Math.PI * 2);
+  ctx.clip();
+  ctx.drawImage(logo, logoX, logoY, logoW, logoH);
+  ctx.restore();
 
   const qrSize = Math.round(QR_CARD_W * QR_CARD_SLOT.w * 0.82);
   const qrHolder = document.createElement("div");
@@ -317,8 +349,12 @@ function renderAdminProviderList() {
             <span class="provider-category">${categoryLabel(p.category)}</span>
           </div>
         </div>
-        <button type="button" class="icon-btn" data-qr="${p.id}" title="${t("admin_qr_button")}">${QR_ICON}</button>
-        <button type="button" class="icon-btn danger" data-delete="${p.id}" title="${t("admin_delete")}">${TRASH_ICON}</button>
+        <div class="provider-list-item-actions">
+          <button type="button" class="icon-btn" data-appts="${p.id}" title="${t("admin_appointments_button")}">${CALENDAR_ICON}</button>
+          <button type="button" class="icon-btn" data-test-push="${p.id}" title="${t("admin_test_push_button")}">${BELL_ICON}</button>
+          <button type="button" class="icon-btn" data-qr="${p.id}" title="${t("admin_qr_button")}">${QR_ICON}</button>
+          <button type="button" class="icon-btn danger" data-delete="${p.id}" title="${t("admin_delete")}">${TRASH_ICON}</button>
+        </div>
       </div>`
     )
     .join("");
@@ -328,6 +364,18 @@ function renderAdminProviderList() {
   });
   listEl.querySelectorAll("[data-delete]").forEach((btn) => {
     btn.addEventListener("click", () => deleteProvider(btn.getAttribute("data-delete")));
+  });
+  listEl.querySelectorAll("[data-appts]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const p = adminProviders.find((x) => x.id === btn.getAttribute("data-appts"));
+      if (p) showAppointmentsModal(p);
+    });
+  });
+  listEl.querySelectorAll("[data-test-push]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const p = adminProviders.find((x) => x.id === btn.getAttribute("data-test-push"));
+      if (p) sendTestPush(p);
+    });
   });
   listEl.querySelectorAll("[data-qr]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -566,7 +614,7 @@ document.getElementById("provider-form").addEventListener("submit", async (e) =>
     name_ar: document.getElementById("name-ar").value.trim(),
     name_en: document.getElementById("name-en").value.trim(),
     category_id: document.getElementById("category").value,
-    phone_whatsapp: document.getElementById("phone").value.trim(),
+    phone_whatsapp: normalizeLebanonPhoneDigits(document.getElementById("phone").value.trim()),
     description_ar: document.getElementById("description-ar").value.trim(),
     description_en: document.getElementById("description-en").value.trim(),
     address: document.getElementById("address").value.trim(),
@@ -601,5 +649,70 @@ document.getElementById("provider-form").addEventListener("submit", async (e) =>
   resetForm();
   loadAdminProviders();
   loadProviderOwners();
+});
+
+async function showAppointmentsModal(provider) {
+  document.getElementById("appt-modal-title").textContent = providerName(provider);
+  const listEl = document.getElementById("appt-modal-list");
+  listEl.innerHTML = `<p class="hint">${t("admin_appointments_loading")}</p>`;
+  document.getElementById("appt-modal").hidden = false;
+
+  const { data, error } = await sb
+    .from("appointments")
+    .select("*")
+    .eq("provider_id", provider.id)
+    .order("appointment_date", { ascending: true })
+    .order("appointment_time", { ascending: true });
+
+  if (error || !data || data.length === 0) {
+    listEl.className = "";
+    listEl.innerHTML = `<p>${t("owner_no_appointments")}</p>`;
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const upcoming = data.filter((a) => a.appointment_date >= today);
+  const past = data
+    .filter((a) => a.appointment_date < today)
+    .sort((a, b) => b.appointment_date.localeCompare(a.appointment_date) || a.appointment_time.localeCompare(b.appointment_time));
+  const ordered = [...upcoming, ...past];
+
+  const groups = [];
+  ordered.forEach((a) => {
+    const last = groups[groups.length - 1];
+    if (last && last.date === a.appointment_date) {
+      last.items.push(a);
+    } else {
+      groups.push({ date: a.appointment_date, items: [a] });
+    }
+  });
+
+  listEl.className = "appt-groups";
+  listEl.innerHTML = groups
+    .map(
+      (group) => `
+        <div class="appt-group">
+          <h3 class="appt-group-title">${groupDateLabel(group.date)}</h3>
+          <div class="appt-list">
+            ${group.items.map((a) => adminAppointmentRowHTML(a)).join("")}
+          </div>
+        </div>`
+    )
+    .join("");
+}
+
+// Wie appointmentRowHTML() in owner.js, aber ohne WhatsApp-/Kalender-Aktionen --
+// der Admin soll Kunden nicht direkt anschreiben koennen.
+function adminAppointmentRowHTML(a) {
+  const label = a.blocked ? t("owner_slot_blocked_by_you") : a.customer_name;
+  return `
+    <div class="appt-row ${a.blocked ? "blocked" : ""}">
+      <span class="appt-row-time">${formatTime(a.appointment_time.slice(0, 5))}</span>
+      <span class="appt-row-customer">${label}</span>
+    </div>`;
+}
+
+document.getElementById("appt-modal-close").addEventListener("click", () => {
+  document.getElementById("appt-modal").hidden = true;
 });
 

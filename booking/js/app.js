@@ -1,6 +1,27 @@
 // Gemeinsame Initialisierung: Supabase-Client (aus supabase-config.js)
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// Eine abgelaufene, im Browser gespeicherte Session (z.B. vom Anbieter-Login auf
+// demselben Geraet) wuerde sonst bei JEDER Anfrage einen kryptischen "jwt expired"-
+// Fehler auf oeffentlichen Kunden-Seiten verursachen. Vorsorglich abmelden.
+sb.auth.getSession().then(({ data }) => {
+  const session = data && data.session;
+  if (session && session.expires_at && session.expires_at * 1000 < Date.now()) {
+    sb.auth.signOut();
+  }
+});
+
+// Wandelt technische Supabase-Fehler (z.B. "JWT expired") in eine verstaendliche
+// Meldung um und meldet bei einem Auth-Fehler die abgelaufene Session vorsorglich ab.
+function friendlyErrorMessage(error) {
+  const raw = (error && error.message) || "";
+  if (/jwt|token|session/i.test(raw)) {
+    sb.auth.signOut();
+    return t("generic_session_error");
+  }
+  return t("generic_error");
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("sw.js").catch(() => {});
@@ -232,6 +253,20 @@ function providerInitial(provider) {
 // Erwartet, dass die Nummer bereits die vollstaendige Landesvorwahl enthaelt
 // (z.B. +961 71 234567 oder +49 151 23456789) -- keine automatische Annahme
 // mehr, dass es sich um eine libanesische Nummer handelt.
+// Ergaenzt fehlende libanesische Landesvorwahl (961), da aktuell nur im Libanon gebucht wird.
+function normalizeLebanonPhoneDigits(input) {
+  let digits = (input || "").replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+  if (digits.startsWith("961")) return digits;
+
+  // Nur ergaenzen, wenn es nach Entfernen einer fuehrenden 0 wie eine
+  // libanesische Mobilnummer aussieht (7-8 Ziffern) -- sonst koennte es eine
+  // auslaendische Nummer ohne fuehrendes + sein, die wir nicht verstuemmeln wollen.
+  const local = digits.startsWith("0") ? digits.slice(1) : digits;
+  if (local.length >= 7 && local.length <= 8) return "961" + local;
+  return digits;
+}
+
 function formatWhatsappNumber(phone) {
   let digits = (phone || "").replace(/\D/g, "");
   if (digits.startsWith("00")) digits = digits.slice(2);
