@@ -89,11 +89,61 @@ function initLocationMap() {
     setLocation(e.latlng.lat, e.latlng.lng);
   });
 
+  document.getElementById("location-coords").addEventListener("change", (e) => {
+    const parsed = parseDMS(e.target.value);
+    if (!parsed) return;
+    setLocation(parsed.lat, parsed.lng);
+    locationMap.setView([parsed.lat, parsed.lng], 16);
+  });
+
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition((pos) => {
       locationMap.setView([pos.coords.latitude, pos.coords.longitude], 15);
     });
   }
+}
+
+// Wandelt eine Dezimalgrad-Koordinate in einen DMS-String um (z.B. 34.4443 -> 34°26'39.5"N).
+function decimalToDMS(deg, isLat) {
+  const hemisphere = isLat ? (deg >= 0 ? "N" : "S") : (deg >= 0 ? "E" : "W");
+  const abs = Math.abs(deg);
+  const d = Math.floor(abs);
+  const minFloat = (abs - d) * 60;
+  const m = Math.floor(minFloat);
+  const s = (minFloat - m) * 60;
+  return d + "°" + m + "'" + s.toFixed(1) + '"' + hemisphere;
+}
+
+function coordsToDMSString(lat, lng) {
+  return decimalToDMS(lat, true) + " " + decimalToDMS(lng, false);
+}
+
+// Liest einen String wie 34°26'39.7"N 35°49'55.4"E ein und gibt {lat, lng} zurueck, sonst null.
+function parseDMS(str) {
+  const re = /(\d+(?:\.\d+)?)\s*°\s*(\d+(?:\.\d+)?)?\s*'?\s*(\d+(?:\.\d+)?)?\s*"?\s*([NSEWnsew])/g;
+  const matches = [...str.matchAll(re)];
+  if (matches.length < 2) return null;
+
+  const toDecimal = (match) => {
+    const degrees = parseFloat(match[1]) || 0;
+    const minutes = parseFloat(match[2]) || 0;
+    const seconds = parseFloat(match[3]) || 0;
+    let decimal = degrees + minutes / 60 + seconds / 3600;
+    const hemisphere = match[4].toUpperCase();
+    if (hemisphere === "S" || hemisphere === "W") decimal = -decimal;
+    return decimal;
+  };
+
+  let lat = null;
+  let lng = null;
+  matches.forEach((match) => {
+    const hemisphere = match[4].toUpperCase();
+    if (hemisphere === "N" || hemisphere === "S") lat = toDecimal(match);
+    else lng = toDecimal(match);
+  });
+
+  if (lat === null || lng === null) return null;
+  return { lat, lng };
 }
 
 function setLocation(lat, lng) {
@@ -106,6 +156,7 @@ function setLocation(lat, lng) {
   }
   document.getElementById("location-readout").textContent =
     t("admin_location_selected") + " " + lat.toFixed(6) + ", " + lng.toFixed(6);
+  document.getElementById("location-coords").value = coordsToDMSString(lat, lng);
 }
 
 function clearLocation() {
@@ -116,6 +167,7 @@ function clearLocation() {
     locationMarker = null;
   }
   document.getElementById("location-readout").textContent = "";
+  document.getElementById("location-coords").value = "";
 }
 
 async function loadAdminProviders() {
@@ -145,30 +197,99 @@ const QR_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
   <path d="M14 14h3v3h-3zM19 14h2v2h-2zM14 19h2v2h-2zM19 19h2v2h-2z"/>
 </svg>`;
 
+const QR_CARD_W = 1024;
+const QR_CARD_H = 1536;
+const QR_CARD_SLOT = { x: 0.2432, y: 0.2233, w: 0.5117, h: 0.3411 };
+const QR_CARD_LOGO_SLOT = { x: 0.0926, y: 0.065, w: 0.1234, h: 0.0823 };
+
+function loadImageEl(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Zeichnet die Druckkarte (Hintergrund + QR + Name) in voller Aufloesung fuer Download/Druck.
+async function buildQrPrintCard(url, name) {
+  await document.fonts.load('700 54px "Scheherazade New"');
+
+  const canvas = document.createElement("canvas");
+  canvas.width = QR_CARD_W;
+  canvas.height = QR_CARD_H;
+  const ctx = canvas.getContext("2d");
+
+  const [bg, logo] = await Promise.all([
+    loadImageEl("assets/qr-card-bg.jpg"),
+    loadImageEl("assets/icon.png")
+  ]);
+  ctx.drawImage(bg, 0, 0, QR_CARD_W, QR_CARD_H);
+
+  ctx.drawImage(
+    logo,
+    QR_CARD_W * QR_CARD_LOGO_SLOT.x,
+    QR_CARD_H * QR_CARD_LOGO_SLOT.y,
+    QR_CARD_W * QR_CARD_LOGO_SLOT.w,
+    QR_CARD_H * QR_CARD_LOGO_SLOT.h
+  );
+
+  const qrSize = Math.round(QR_CARD_W * QR_CARD_SLOT.w * 0.82);
+  const qrHolder = document.createElement("div");
+  new QRCode(qrHolder, { text: url, width: qrSize, height: qrSize, correctLevel: QRCode.CorrectLevel.M });
+  const qrCanvas = qrHolder.querySelector("canvas");
+
+  const slotX = QR_CARD_W * QR_CARD_SLOT.x;
+  const slotY = QR_CARD_H * QR_CARD_SLOT.y;
+  const slotW = QR_CARD_W * QR_CARD_SLOT.w;
+  const slotH = QR_CARD_H * QR_CARD_SLOT.h;
+  ctx.drawImage(qrCanvas, slotX + (slotW - qrSize) / 2, slotY + (slotH - qrSize) / 2, qrSize, qrSize);
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "#1e7a5f";
+  ctx.font = '700 56px "Scheherazade New", serif';
+  ctx.fillText(name, QR_CARD_W / 2, QR_CARD_H * 0.645);
+
+  return canvas.toDataURL("image/png");
+}
+
 function showQrModal(provider) {
-  const url = `${window.location.origin}/provider.html?id=${provider.id}`;
-  document.getElementById("qr-modal-title").textContent = providerName(provider);
+  const url = `${window.location.origin}/booking/provider.html?id=${provider.id}`;
+  const name = providerName(provider);
+  document.getElementById("qr-modal-title").textContent = name;
   document.getElementById("qr-modal-url").textContent = url;
+  document.getElementById("qr-print-card-name").textContent = name;
 
   const container = document.getElementById("qr-canvas");
   container.innerHTML = "";
   new QRCode(container, {
     text: url,
-    width: 220,
-    height: 220,
+    width: 240,
+    height: 240,
     correctLevel: QRCode.CorrectLevel.M
   });
 
-  const canvas = container.querySelector("canvas");
-  if (canvas) {
-    document.getElementById("qr-download-btn").href = canvas.toDataURL("image/png");
-  }
-
   document.getElementById("qr-modal").hidden = false;
+
+  buildQrPrintCard(url, name).then((dataUrl) => {
+    document.getElementById("qr-download-btn").href = dataUrl;
+  });
 }
 
 document.getElementById("qr-modal-close").addEventListener("click", () => {
   document.getElementById("qr-modal").hidden = true;
+});
+
+document.getElementById("qr-print-btn").addEventListener("click", () => {
+  const dataUrl = document.getElementById("qr-download-btn").href;
+  if (!dataUrl.startsWith("data:")) return;
+  const win = window.open("", "_blank");
+  win.document.write(
+    `<html><head><title>${document.getElementById("qr-modal-title").textContent}</title>
+    <style>@page{margin:0}body{margin:0;display:flex;align-items:center;justify-content:center}img{width:100%;max-width:420px}</style>
+    </head><body><img src="${dataUrl}" onload="window.print()" /></body></html>`
+  );
+  win.document.close();
 });
 
 function renderAdminProviderList() {

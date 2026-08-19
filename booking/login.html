@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Scheherazade+New:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="css/style.css?v=39" />
+  <link rel="stylesheet" href="css/style.css?v=42" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 <body class="admin-body">
@@ -177,6 +177,9 @@
           <p class="hint" data-i18n="admin_location_hint">اضغط على الخريطة لتحديد الموقع بدقة</p>
           <div id="location-map" class="location-map"></div>
           <p id="location-readout" class="hint"></p>
+          <label for="location-coords" data-i18n="admin_coords_label">الإحداثيات</label>
+          <input type="text" id="location-coords" placeholder="34°26'39.7&quot;N 35°49'55.4&quot;E" />
+          <p class="hint" data-i18n="admin_coords_hint">يمكنك لصق إحداثيات هنا لنقل الدبوس تلقائيًا، أو الضغط على الخريطة لتحديث الإحداثيات هنا</p>
         </div>
 
         <div class="form-section">
@@ -346,11 +349,19 @@
     <div class="modal-card surface-card">
       <button type="button" id="qr-modal-close" class="modal-close">&times;</button>
       <h3 id="qr-modal-title"></h3>
-      <div id="qr-canvas" class="qr-canvas-wrap"></div>
+      <div class="qr-print-card">
+        <img src="assets/qr-card-bg.jpg" class="qr-print-card-bg" alt="" />
+        <img src="assets/icon.png" class="qr-print-card-logo" alt="" />
+        <div id="qr-canvas" class="qr-print-card-qr"></div>
+        <div id="qr-print-card-name" class="qr-print-card-name"></div>
+      </div>
       <p class="hint" id="qr-modal-url"></p>
       <a id="qr-download-btn" class="btn-primary btn-block" download="qr-code.png">
         <span data-i18n="admin_qr_download">تحميل رمز QR</span>
       </a>
+      <button type="button" id="qr-print-btn" class="btn-secondary btn-block" data-i18n="admin_qr_print">
+        طباعة
+      </button>
     </div>
   </div>
 
